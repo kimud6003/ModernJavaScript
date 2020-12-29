@@ -66,7 +66,7 @@
 
     document.head.append(script);
     }
-``
+```
     위와 같이 함수를 만들고 아래같이 사용하게 되면  원하는대로  newFunction 함수를 사용할수있습니다.
 ```js
     loadScript('/my/script.js', function() {
