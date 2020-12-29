@@ -44,7 +44,7 @@
 - 콜백함수와 비동기 처리를 언급하기전에 먼저 가장 대표적인 비동기 함수에 대해 알아 보고가겠습니다.
 
 - src에 있는 스크립트를 읽어 오는 함수 loadScript가 있다고 가정하겠습니다. (이 함수는 비동기 함수입니다)
-
+```js
     function loadScript(src) {
       let script = document.createElement('script');
       script.src = src;
@@ -54,10 +54,10 @@
     loadScript('/my/script.js'); 
 
     newFunction(); // my/script.js 안에 있는 함수
-
+```
 - 이렇게 함수가 있다면 newFunction은 에러가 발생하게 될것입니다. 그 이유는 비동기적으로 작동하기 때문에 my/script.js에 있는 newFunction을 읽기전에 실행 되기 때문입니다.
 - 그럼 여기에 콜백 함수를 넣어 보도록 하겠습니다.
-
+```js
     function loadScript(src,testcallback) {
       let script = document.createElement('script');
       script.src = src;
@@ -66,14 +66,14 @@
 
     document.head.append(script);
     }
-
+``
     위와 같이 함수를 만들고 아래같이 사용하게 되면  원하는대로  newFunction 함수를 사용할수있습니다.
-
+```js
     loadScript('/my/script.js', function() {
       newFunction(); 
       ...
     });
-
+```
 # 2.Promise
 
 > 프로미스란?
@@ -84,8 +84,8 @@
 > 콜백 헬
 
 - 콜백 헬은 아래 그림과 같이 비동기 처리를 위해 콜백 함수를 사용하면서 순서를 정하기 위해 가독성이 나빠지는 상태를 이야기합니다.
-
-    call**1(function(v1) {
+```js
+    call1(function(v1) {
       call2(v1, function(v2) {
         call3(v2, function(v3) {
           call4(v3, function(v4) {
@@ -95,12 +95,12 @@
           });
         });
       });
-    });**
-
+    });
+```
 > Promise 사용
 
 - 프로미스의 사용은 아래와 같습니다.
-
+```js
     // Promise 객체의 생성
     const promise = new Promise((resolve, reject) => {
 
@@ -111,7 +111,7 @@
         reject('failure reason');
       }   
     });
-
+```
 - new Promise에 전달되는 함수는 if문 부터 else까지를 (실행 함수) 라고 부릅니다.
 - 실햄함수의 인수 resolve와 reject는 자바스크립트가 자체적으로 제공하는 콜백입니다. 개발자는 resolve와 reject를 신경 쓰지 않고 executor 안 코드만 작성하면 됩니다.
 - 대신 executor에선 결과를 즉시 얻든, 늦게 얻든 상관없이 상황에 따라 인수로 넘겨준 콜백 중 하나를 반드시 호출해야 합니다.
