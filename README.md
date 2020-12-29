@@ -15,7 +15,7 @@
 
 [2.5 자료형](#25-자료형)
 
-[2.6 alert, prompt, confirm을 이용한 상호작용](#26-alert,-prompt,-confirm을-이용한-상호작용)
+[2.6 alert, prompt, confirm을 이용한 상호작용](#26-alert-prompt-confirm을-이용한-상호작용)
 
 [2.7 형 변환](#27-형-변환)
 
