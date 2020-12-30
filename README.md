@@ -21,8 +21,8 @@
 
     A요청 -> A결과 -> B요청 -> B결과 -> C요청 -> C결과 -> D요청 -> D결과 ->  . . .
 
-    와 같이 순차적으로(A-B-C-D) 흘러가는 것입니다.
-
+    와 같이 순차적으로(A-B-C-D) 흘러가는 것입니다. 
+ 
 - 비동기 함수는 이와 반대로
 
     프로그램의 실행흐름이
@@ -62,7 +62,7 @@
       let script = document.createElement('script');
       script.src = src;
 
-    ***script.onload = () => testcallback(script); //콜백함수***
+      script.onload = () => testcallback(script); //콜백함수
 
     document.head.append(script);
     }
@@ -76,6 +76,8 @@
       ...
     });
 ```
+
+
 # 2.Promise
 
 > 프로미스란?
@@ -115,9 +117,228 @@
     });
 ```
 - new Promise에 전달되는 함수는 if문 부터 else까지를 (실행 함수) 라고 부릅니다.
-- 실햄함수의 인수 resolve와 reject는 자바스크립트가 자체적으로 제공하는 콜백입니다. 개발자는 resolve와 reject를 신경 쓰지 않고 executor 안 코드만 작성하면 됩니다.
+- 실햄함수의 인수 `resolve`와 `reject`는 자바스크립트가 자체적으로 제공하는 콜백입니다. 개발자는 `resolve`와 `reject`를 신경 쓰지 않고 executor 안 코드만 작성하면 됩니다.
 - 대신 executor에선 결과를 즉시 얻든, 늦게 얻든 상관없이 상황에 따라 인수로 넘겨준 콜백 중 하나를 반드시 호출해야 합니다.
 - `resolve(value)` — 일이 성공적으로 끝난 경우, 그 결과를 나타내는 `value`와 함께 호출
 - `reject(error)` — 에러 발생 시 에러 객체를 나타내는 `error`와 함께 호출
 
-[프로미스의 상태](https://www.notion.so/88cfe885491a4ea4987f8fa2c4735032)
+> 프로미스의 상태 
+
+| 프로미스 상태  | 의미  | 구현  |
+|:----------|:----------:|----------:|
+| pending | 비동기 처리가 아직 수행되지 않은 상태 | reslove 또는 reject 함수가 아직 호출되지 않은 상태 |
+| fulfilled | 비동기 처리가 수행되고 성공| resolve 함수가 호출된 상태 |
+| rejected | 비동기 처리가 수행되고 실패  | reject함수가 호출된 상태 |
+| settled | 비동기 처리가 수행된 상태 성공 or 실패  | resolve 또는 reject 함수가 호출된 상태 |
+
+> 프로미스의 후속 처리 메소드
+
+- Promise로 구현된 비동기 함수는 Promise 객체를 반환하여야 합니다. 따라서 함수를 호출하는 측에서는 Promise 객체의 후속 처리 메소드 (then, chatch,finally)를 통해 비동기 처리 결과를 전달 받아 처리 할수 있습니다.
+- then 사용법
+```js
+  let promise = new Promise(function(resolve, reject) {
+    setTimeout(() => resolve("성공"), 1000);
+  });
+
+  promise.then(
+    result => alert(result), // 성공을 출력
+    error => alert(error) // 실행되지 않음
+  );
+```
+  - then 메소드는 두개의 콜백 함수를 전달 받게 되는데요. 첫번째 인자는 성공시 호출, 두번쨰 인자는 실패시에 호출됩니다.
+
+- catch 사용법 
+```js
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error("에러 발생!")), 1000);
+  });
+
+  // .catch(f)는 promise.then(null, f)과 동일하게 작동합니다
+  promise.catch(alert); // 1초 뒤 "Error: 에러 발생!" 출력
+```
+  - catch 메소드는 예외 처리를 할때 사용하게 됩니다.(then에 실패와는 다릅니다!)
+
+
+# 프로미스 체이닝
+  > 프로미스 체이닝이란?
+
+- 비동기 처리를 위해 callback을 사용했더니 callback헬이 발생 했던것이 기억이 날것입니다. 프로미스에서는 이러한 코드의 복잡도를 줄어들게 하기 위해서 후속처리 메소드를 연결(chaing)하여 여러 개의 프로미스를 연결 하여 사용합니다.
+
+- 프로미스 체이닝 코드
+```js
+  new Promise(function(resolve, reject) {
+
+    setTimeout(() => resolve(1), 1000); // (*)
+
+  }).then(function(result) { // (**)
+
+    alert(result); // 1
+    return result * 2;
+
+  }).then(function(result) { // (***)
+
+    alert(result); // 2
+    return result * 2;
+
+  }).then(function(result) {
+
+    alert(result); // 4
+    return result * 2;
+
+  });
+```
+- 프라미스 체이닝은 result가 .then 핸들러의 체인(사슬)을 통해 전달된다는 점에서 착안한 아이디어입니다.
+
+- 위 예시는 아래와 같은 순서로 실행됩니다.
+> 1초 후 최초 프라미스가 이행됩니다, – (*)
+  이후 .then 핸들러가 호출됩니다. –(**)
+  2에서 반환한 값은 다음 .then 핸들러에 전달됩니다. – (***)
+  이런 과정이 계속 이어집니다.
+  result가 핸들러 체인을 따라 전달되므로, alert 창엔 1, 2, 4가 순서대로 출력됩니다.
+
+- 그렇다면 여기서 문제를 내도록 하겠습니다
+``` js
+  new Promise(function(resolve, reject) {
+
+    setTimeout(() => resolve(1), 1000);
+
+  }).then(function(result) {
+
+    alert(result); // 결과 값은?
+
+    return new Promise((resolve, reject) => { 
+      setTimeout(() => resolve(result * 2), 1000);
+    });
+
+  }).then(function(result) { 
+
+    alert(result); // 결과 값은?
+
+    return new Promise((resolve, reject) => {
+      setTimeout(() => resolve(result * 2), 1000);
+    });
+
+  }).then(function(result) {
+
+    alert(result); // 결과 값은?
+
+  });
+```
+- return 값으로 프로미스를 반환 하였습니다. 이럴 경우 값은 어떻게 나올까요?
+- 결과는 위에 코드와 동일하게 1,2,4를 반환하게 됩니다. 처음 promise에서 반환을 새로은 promise로 해버리기 때문이죠
+
+# Promise 정적 메서드 
+> Promise API란?
+- Promise 클래스에는 5가지 정적 메서드가 있습니다. 이번 챕터에선 다섯 메서드의 유스 케이스에 대해서 빠르게 알아보겠습니다.
+
+> Promise.all
+- Promise.all은 요소 전체가 프로미스로 담겨있는 배열을 인자로 전달 받고 새로운 프로미스를 반환합니다.
+
+```js
+  Promise.all([
+    new Promise(resolve => setTimeout(() => resolve(1), 3000)), // 1
+    new Promise(resolve => setTimeout(() => resolve(2), 2000)), // 2
+    new Promise(resolve => setTimeout(() => resolve(3), 1000))  // 3
+  ]).then(alert); // 프라미스 전체가 처리되면 1, 2, 3이 반환됩니다. 각 프라미스는 배열을 구성하는 요소가 됩니다.
+
+  //or
+
+  Promise.all([
+    new Promise((resolve, reject) => {
+      setTimeout(() => resolve(1), 1000)
+    }),
+    2,
+    3
+  ]).then(alert); // 1, 2, 3
+```
+- 여기서 주의 해야할점은 결과값이 [1,2,3]이 출력 된다는 점 입니다. 처리 순서는 3,2,1인데도 말이죠.
+- 만약 여기서 2을 반환하는 프로미스 함수가 에러로 인해 중간에 끊긴다면 어떻게 될까요? Promise.all 전체가 취소가 됩니다.
+
+> Promise.allSettled
+
+-  Promise.all은 프라미스가 하나라도 거절되면 전체를 거절합니다, 하지만 Promise.allSettled는 모든 프라미스가 처리될 때까지 기다립니다.
+- 예를 들어 여러 사람의 정보를 가져오고 있다고 해봅시다. 여러 요청 중 하나가 실패해도 다른 요청 결과는 여전히 있어야 합니다. 이럴 경우 Promise.allSettled를 사용하게 됩니다.
+
+``` js
+  let urls = [
+    '사람관련 링크',
+    '동물관련 링크',
+    '링크가 아닌 이상한 문자들'
+  ];
+
+  Promise.allSettled(urls.map(url => fetch(url)))
+    .then(results => { 
+      results.forEach((result, num) => {
+        if (result.status == "fulfilled") {
+          alert(`${urls[num]}: ${result.value.status}`);
+        }
+        if (result.status == "rejected") {
+          alert(`${urls[num]}: ${result.reason}`);
+        }
+      });
+    });
+```
+- 만약 위와 같이 코드를 짰다면 `사람관련 링크`와  `동물관련 링크` 에서는 `fetch`가 작동하지만 `링크가 아닌 이상한 문자들`에서 는 에러가 발생 하게 될것입니다.
+
+- 결과
+```js
+  [
+    {status: 'fulfilled', value: ...응답...},
+    {status: 'fulfilled', value: ...응답...},
+    {status: 'rejected', reason: ...에러 객체...}
+  ]
+```
+
+> Promise.race
+
+- Promise.race는 Promise.all과 비슷합니다. 다만 가장 먼저 처리되는 프라미스의 결과(혹은 에러)를 반환합니다.
+
+```js
+  Promise.race([
+    new Promise((resolve, reject) => setTimeout(() => resolve(1), 1000)),
+    new Promise((resolve, reject) => setTimeout(() => reject(new Error("에러 발생!")), 2000)),
+    new Promise((resolve, reject) => setTimeout(() => resolve(3), 3000))
+  ]).then(alert); // 1
+```
+
+> Promise.resolve/reject
+
+- Promise.resolve와 Promise.reject 메소드는 존재하는 값을 Promise로 래핑하기 위해 사용합니다. 하지만 async/await이 생김에 따라 요즘은 사용하지 않습니다.
+
+```js
+let promise = new Promise(resolve => resolve(value));
+let promise = new Promise((resolve, reject) => reject(error));
+```
+
+# Promisification
+- 콜백을 받는 함수를 프라미스를 반환하는 함수로 바꾸는 것을 '프라미스화(promisification)'라고 합니다.
+- 콜백 기반의 라이브러리가 있을때 프로미스화 해야하는 경우가 종종 있다고 합니다.
+
+```js
+function loadScript(src, callback) {
+  let script = document.createElement('script');
+  script.src = src;
+
+  script.onload = () => callback(null, script);
+  script.onerror = () => callback(new Error(`${src}를 불러오는 도중에 에러가 발생함`));
+
+  document.head.append(script);
+}
+```
+
+- 위 콜백함수를 프로미스화를 해보겠습니다.
+
+```js
+let loadScriptPromise = function(src) {
+  return new Promise((resolve, reject) => {
+    loadScript(src, (err, script) => {
+      if (err) reject(err)
+      else resolve(script);
+    });
+  })
+}
+```
+- 단 프로미스화는 콜백을 완전히 대채하지는 못합니다.프로미스는 하나의 결과만 가질 수 있지만, 콜백은 여러 번 호출을 할수 있기 때문입니다. 따라서 <b>프라미스화는 콜백을 단 한 번 호출하는 함수에만 적용하시기 바랍니다. 프라미스화한 함수의 콜백을 여러 번 호출해도, 두 번째부터는 무시됩니다.</b>
+
+# async와 await
+
