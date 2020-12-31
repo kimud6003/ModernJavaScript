@@ -141,8 +141,8 @@
   });
 
   promise.then(
-    result => alert(result), // 성공을 출력
-    error => alert(error) // 실행되지 않음
+    result => console.log(result), // 성공을 출력
+    error => console.log(error) // 실행되지 않음
   );
 ```
   - then 메소드는 두개의 콜백 함수를 전달 받게 되는데요. 첫번째 인자는 성공시 호출, 두번쨰 인자는 실패시에 호출됩니다.
@@ -154,7 +154,7 @@
   });
 
   // .catch(f)는 promise.then(null, f)과 동일하게 작동합니다
-  promise.catch(alert); // 1초 뒤 "Error: 에러 발생!" 출력
+  promise.catch(e=>console.log(e)); // 1초 뒤 "Error: 에러 발생!" 출력
 ```
   - catch 메소드는 예외 처리를 할때 사용하게 됩니다.(then에 실패와는 다릅니다!)
 
@@ -172,17 +172,17 @@
 
   }).then(function(result) { // (**)
 
-    alert(result); // 1
+    console.log(result); // 1
     return result * 2;
 
   }).then(function(result) { // (***)
 
-    alert(result); // 2
+    console.log(result); // 2
     return result * 2;
 
   }).then(function(result) {
 
-    alert(result); // 4
+    console.log(result); // 4
     return result * 2;
 
   });
@@ -204,7 +204,7 @@
 
   }).then(function(result) {
 
-    alert(result); // 결과 값은?
+    console.log(result); // 결과 값은?
 
     return new Promise((resolve, reject) => { 
       setTimeout(() => resolve(result * 2), 1000);
@@ -212,7 +212,7 @@
 
   }).then(function(result) { 
 
-    alert(result); // 결과 값은?
+    console.log(result); // 결과 값은?
 
     return new Promise((resolve, reject) => {
       setTimeout(() => resolve(result * 2), 1000);
@@ -220,7 +220,7 @@
 
   }).then(function(result) {
 
-    alert(result); // 결과 값은?
+    console.log(result); // 결과 값은?
 
   });
 ```
@@ -239,7 +239,7 @@
     new Promise(resolve => setTimeout(() => resolve(1), 3000)), // 1
     new Promise(resolve => setTimeout(() => resolve(2), 2000)), // 2
     new Promise(resolve => setTimeout(() => resolve(3), 1000))  // 3
-  ]).then(alert); // 프라미스 전체가 처리되면 1, 2, 3이 반환됩니다. 각 프라미스는 배열을 구성하는 요소가 됩니다.
+  ]).then((e)=>console.log(e)); // 프라미스 전체가 처리되면 1, 2, 3이 반환됩니다. 각 프라미스는 배열을 구성하는 요소가 됩니다.
 
   //or
 
@@ -249,7 +249,7 @@
     }),
     2,
     3
-  ]).then(alert); // 1, 2, 3
+  ]).then((e)=>console.log(e)); // 1, 2, 3
 ```
 - 여기서 주의 해야할점은 결과값이 [1,2,3]이 출력 된다는 점 입니다. 처리 순서는 3,2,1인데도 말이죠.
 - 만약 여기서 2을 반환하는 프로미스 함수가 에러로 인해 중간에 끊긴다면 어떻게 될까요? Promise.all 전체가 취소가 됩니다.
@@ -298,7 +298,7 @@
     new Promise((resolve, reject) => setTimeout(() => resolve(1), 1000)),
     new Promise((resolve, reject) => setTimeout(() => reject(new Error("에러 발생!")), 2000)),
     new Promise((resolve, reject) => setTimeout(() => resolve(3), 3000))
-  ]).then(alert); // 1
+  ]).then(e=>console.log(e)); // 1
 ```
 
 > Promise.resolve/reject
@@ -342,3 +342,51 @@ let loadScriptPromise = function(src) {
 
 # async와 await
 
+> async await란 
+- 기존 비동기 처리 방식 콜백과 프로미스의 단점을 보완하기 위해 나온 방법입니다.
+
+> async 사용 
+- 먼저 async 부터 한번 보도록 하겠습니다.
+
+```js
+  async function asyncFunction() {
+    return 1;
+  }
+```
+- 함수 앞에 async라는 키워드를 붙여서 사용합니다. async가 붙은 함수는 항상 프로미스(프로미스가 아니더라도 프로미스로 감싸서 반환)를 반환 합니다. 
+
+```js
+  async function asyncFunction() {
+      return 'test';
+    }
+
+  asyncFunction().then(
+      result => console.log(result) //test 출력 
+  );
+```
+> await 사용 
+- 자바스크립트는 await 키워드를 만나면 프라미스가 처리(settled)될 때까지 기다립니다. 결과는 그 이후 반환됩니다.
+
+```js 
+  async function asyncFunction() {
+
+      let promise = new Promise((resolve, reject) => {
+        setTimeout(() => resolve("완료!"), 1000)
+      });
+
+      let result2 = promise; //  프로미스가 이행될 때까지 기다리지 않는다
+      console.log(result2); // Promise{<pending>} 
+
+      let result = await promise; // 프로미스가 이행될 때까지 기다림 (*)
+      console.log(result); // "완료!"
+
+    }
+  asyncFunction();
+```
+ - 위 예시를 본다면 result2 는 프로미스가 이행될 때까지 기다리이 않기 때문에 완료 처리가 나오지 않는것을 확인 할수있습니다.
+
+ - 프라미스가 처리되길 기다리는 동안엔 엔진이 다른 일(다른 스크립트를 실행, 이벤트 처리 등)을 할 수 있기 때문에, CPU 리소스가 낭비되지 않습니다.
+
+ - 또한 await은 thenable 객체(then 메서드가 있는 호출 가능한 객체)를 사용할 수 있습니다. 
+
+ 
