@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<body>
+    <script>
+        "use strict";
+        // function sayhi(){
+        //     alert("Hello");
+        // }
+        // let sayHi = function(){
+        //     alert("Hello");
+        // };
+        // alert(sayhi);
+
+        // function ask(question,yes,no){
+        //     if(confirm(question))yes()
+        //     else no();
+        // }
+        // function showOk(){
+        //     alert("동의하셨습니다.");
+        // }
+        // function showCancel(){
+        //     alert("취소 버튼을 누르셨습니다.");
+        // }
+        // //사용법
+        // ask("동의하시겠습니까?",showOk,showCancel);
+
+        // ask("동의하시겠습니까?",
+        //     function(){alert("동의하셨습니다.")},
+        //     function(){alert("취소 버튼을 누르셨습니다.");}
+        // )
+        // let sum = (a, b) => a + b;
+
+        // let s = function(a,b){
+        //     return a+b;
+        // };
+
+        // alert(sum(1, 2));
+
+        // let age = prompt("나이를 알려주세요: ", 18);
+
+        // let welcome = (age < 18) ?
+        //     () => alert("안녕") :
+        //     () => alert("안녕하세요");
+
+        // welcome();
+
+        function ask(question, yes, no) {
+            if (confirm(question)) yes()
+            else no();
+        }
+
+        ask("동의하시겠습니까?",
+            () => alert("동의하셨습니다."),
+            () => alert("취소 버튼을 누르셨습니다.")
+        );
+    </script>
+</body>
+
+</html>
