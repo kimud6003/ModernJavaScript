@@ -65,6 +65,10 @@
 
     [5.2 숫자형](#52-숫자형)
 
+    [5.3 문자열](#53-문자열)
+
+    [5.4 배열](#54-배열)
+
 # Let Declaration
 ## 1. 자바스크립트란?
 
@@ -5577,3 +5581,787 @@ alert( num.toString(2) );   // 11111111
     ```jsx
     alert( 123456..toString(36) ); // 2n9c
     ```
+
+## 어림수 구하기
+
+어림수를 구하는 것(rounding)은 숫자를 다룰 때 가장 많이 사용되는 연산 중 하나입니다.
+
+어림수 관련 내장 함수 몇 가지를 살펴봅시다.
+
+**`Math.floor`**
+
+소수점 첫째 자리에서 내림(버림). `3.1`은 `3`, `-1.1`은 `-2`가 됩니다.
+
+**`Math.ceil`**
+
+소수점 첫째 자리에서 올림. `3.1`은 `4`, `-1.1`은 `-1`이 됩니다.
+
+**`Math.round`**
+
+소수점 첫째 자리에서 반올림. `3.1`은 `3`, `3.6`은 `4`, `-1.1`은 `-1`이 됩니다.
+
+**`Math.trunc` (Internet Explorer에서는 지원하지 않음)**
+
+소수부를 무시. `3.1`은 `3`이 되고 `-1.1`은 `-1`이 됩니다.
+
+위에서 소개한 내장 함수들만으로도 소수부에 관련된 연산 대부분을 처리할 수 있습니다. 그런데 소수점 `n-th`번째 수를 기준으로 어림수를 구해야 하는 상황이라면 어떻게 해야 할까요?
+
+예를 들어 `1.2345`가 있는데 소수점 두 번째 자릿수까지만 남겨 `1.23`을 만들고 싶은 경우처럼 말이죠.
+
+두 가지 방법이 있습니다.
+
+1. 곱하기와 나누기
+
+    소수점 두 번째 자리 숫자까지만 남기고 싶은 경우, 숫자에 `100` 또는 `100`보다 큰 `10`의 거듭제곱 수를 곱한 후, 원하는 어림수 내장 함수를 호출하고 처음 곱한 수를 다시 나누면 됩니다.
+
+    ```jsx
+    let num = 1.23456;
+
+    alert( Math.floor(num * 100) / 100 ); // 1.23456 -> 123.456 -> 123 -> 1.23
+    ```
+
+2. 소수점 `n` 번째 수까지의 어림수를 구한 후 이를 문자형으로 반환해주는 메서드인 [toFixed(n)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)를 사용합니다.
+
+    ```jsx
+    let num = 12.34;
+    alert( num.toFixed(1) ); // "12.3"
+    ```
+
+    `toFixed`는 `Math.round`와 유사하게 가장 가까운 값으로 올림 혹은 버림해줍니다.
+
+    ```jsx
+    let num = 12.36;
+    alert( num.toFixed(1) ); // "12.4"
+    ```
+
+    `toFixed`를 사용할 때 주의할 점은 이 메서드의 반환 값이 문자열이라는 것입니다. 소수부의 길이가 인수보다 작으면 끝에 0이 추가됩니다.
+
+    ```jsx
+    let num = 12.34;
+    alert( num.toFixed(5) ); // "12.34000", 소수부의 길이를 5로 만들기 위해 0이 추가되었습니다.
+    ```
+
+    참고로, `+num.toFixed(5)`처럼 단항 덧셈 연산자를 앞에 붙이거나 `Number()`를 호출하면 문자형의 숫자를 숫자형으로 변환할 수 있습니다.
+
+## 부정확한 계산
+
+숫자는 내부적으로 64비트 형식 [IEEE-754](https://en.wikipedia.org/wiki/IEEE_754-2008_revision)으로 표현되기 때문에 숫자를 저장하려면 정확히 64비트가 필요합니다. 64비트 중 52비트는 숫자를 저장하는 데 사용되고, 11비트는 소수점 위치를(정수는 0), 1비트는 부호를 저장하는 데 사용됩니다.
+
+그런데 숫자가 너무 커지면 64비트 공간이 넘쳐서 Infinity로 처리됩니다.
+
+```jsx
+alert( 1e500 ); // Infinity
+```
+
+원인을 이해하려면 집중이 필요하긴 하지만, 꽤 자주 발생하는 현상인 정밀도 손실(loss of precision)도 있습니다.
+
+```jsx
+alert( 0.1 + 0.2 == 0.3 ); // *false*
+```
+
+`0.1`과 `0.2`의 합이 `0.3`과 일치하는지 확인 했는데 `false`가 출력되었습니다.
+
+이상하네요! 합의 결과가 `0.3`이 아니라면 대체 무엇일까요?
+
+```jsx
+alert( 0.1 + 0.2 ); // 0.30000000000000004
+```
+
+부정확한 비교 연산이 만들어내는 결과는 여기서 그치지 않습니다. 인터넷 쇼핑몰 사이트를 운영하고 있다고 가정해 봅시다. 사용자가 `$0.10`와 `$0.20` 짜리 물품을 장바구니에 넣었다고 상상해 보죠. 주문 총액이 `$0.30000000000000004`인 것을 보고 놀라지 않을 사용자는 없을 겁니다.
+
+왜 이런 일이 발생하는 걸까요?
+
+숫자는 0과 1로 이루어진 이진수로 변환되어 연속된 메모리 공간에 저장됩니다. 그런데 10진법을 사용하면 쉽게 표현할 수 있는 `0.1`, `0.2` 같은 분수는 이진법으로 표현하면 무한 소수가 됩니다.
+
+`0.1`은 1을 10으로 나눈 수인 `1/10`입니다. 10진법을 사용하면 이러한 숫자를 쉽게 표현할 수 있죠. `1/10`과 `1/3`을 비교해봅시다. `1/3`은 무한 소수 `0.33333(3)`이 됩니다.
+
+이렇게 `10`의 거듭제곱으로 나눈 값은 10진법에서 잘 동작하지만 `3`으로 나누게 되면 10진법에서 제대로 동작하지 않습니다. 같은 이유로 2진법 체계에서 `2`의 거듭제곱으로 나눈 값은 잘 동작하지만 `1/10`같이 `2`의 거듭제곱이 아닌 값으로 나누게 되면 무한 소수가 되어버립니다.
+
+10진법에서 1/3을 정확히 나타낼 수 없듯이, 2진법을 사용해 *0.1* 또는 *0.2*를 **정확하게** 저장하는 방법은 없습니다.
+
+IEEE-754에선 가능한 가장 가까운 숫자로 반올림하는 방법을 사용해 이런 문제를 해결합니다. 그런데 반올림 규칙을 적용하면 발생하는 '작은 정밀도 손실’을 우리가 볼 수는 없지만 실제로 손실은 발생합니다.
+
+아래와 같이 코드를 작성하면 정밀도 손실을 눈으로 확인할 수 있죠.
+
+```jsx
+alert( 0.1.toFixed(20) ); // 0.10000000000000000555
+```
+
+그리고 두 숫자를 합하면 '정밀도 손실’도 더해집니다.
+
+`0.1 + 0.2`가 정확히 `0.3`이 아닌 이유가 여기에 있습니다.
+
+문제를 해결하는 방법은 없을까요? 물론 있습니다. 가장 신뢰할만한 방법은 [toFixed(n)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed)메서드를 사용해 어림수를 만드는 것입니다.
+
+```jsx
+let sum = 0.1 + 0.2;
+alert( sum.toFixed(2) ); // 0.30
+```
+
+이때 `toFixed`는 항상 문자열을 반환한다는 점에 유의해야 합니다. 문자열을 반환하기 때문에 소수점 다음에 오는 숫자가 항상 2개가 될 수 있습니다. 인터넷 쇼핑몰을 구축 중이고 `$0.30`를 보여줘야 할 때 유용하죠. 문자형으로 바뀐 숫자를 다시 숫자형으로 강제 변환하려면 단항 덧셈 연산자를 사용하면 됩니다.
+
+```jsx
+let sum = 0.1 + 0.2;
+alert( +sum.toFixed(2) ); // 0.3
+```
+
+숫자에 임시로 100(또는 더 큰 숫자)을 곱하여 정수로 바꾸고, 원하는 연산을 한 후 다시 100으로 나누는 것도 하나의 방법이 될 수 있습니다. 정수를 대상으로 하는 수학 연산은 소수를 대상으로 하는 연산보다 에러가 적기 때문입니다. 그런데 어쨌든 마지막에 나눗셈이 들어가기 때문에 소수가 다시 등장할 수 있다는 단점이 있습니다.
+
+```jsx
+alert( (0.1 * 10 + 0.2 * 10) / 10 ); // 0.3
+alert( (0.28 * 100 + 0.14 * 100) / 100); // 0.4200000000000001
+```
+
+이렇게 10의 거듭제곱을 곱하고 다시 동일한 숫자로 나누는 전략은 오류를 줄여주긴 하지만 완전히 없애지는 못합니다.
+
+구현을 하다 보면 무한 소수가 나오는 경우를 완전히 차단해야 하는 경우가 생기곤 합니다. 달러가 아닌 센트 단위로 물품 가격을 저장하는 쇼핑몰을 담당하고 있는데, 행사 때문에 가격을 30% 할인해야 하는 경우가 그렇죠. 무한소수를 방지하는 완벽한 방법은 사실 없습니다. 필요할 때마다 '꼬리’를 잘라 어림수를 만드는 방법뿐이죠.
+
+## isNaN과 isFinite
+
+아래 두 특수 숫자 값이 기억나시나요?
+
+- `Infinity`와 `Infinity` – 그 어떤 숫자보다 큰 혹은 작은 특수 숫자 값
+- `NaN` – 에러를 나타내는 값
+
+두 특수 숫자는 `숫자형`에 속하지만 ‘정상적인’ 숫자는 아니기 때문에, 정상적인 숫자와 구분하기 위한 특별한 함수가 존재합니다.
+
+- `isNaN(value)` – 인수를 숫자로 변환한 다음 `NaN`인지 테스트함
+
+    ```jsx
+    alert( isNaN(NaN) ); // true
+    alert( isNaN("str") ); // true
+    ```
+
+    그런데 굳이 이 함수가 필요할까요? "`=== NaN` 비교를 하면 되지 않을까?"라는 생각이 들 수 있습니다. 안타깝게도 대답은 '필요하다’입니다. `NaN`은 `NaN` 자기 자신을 포함하여 그 어떤 값과도 같지 않다는 점에서 독특합니다.
+
+    ```jsx
+    alert( NaN === NaN ); // false
+    ```
+
+- `isFinite(value)` – 인수를 숫자로 변환하고 변환한 숫자가 `NaN/Infinity/-Infinity`가 아닌 일반 숫자인 경우 `true`를 반환함
+
+    ```jsx
+    alert( isFinite("15") ); // true
+    alert( isFinite("str") ); // false, NaN이기 때문입니다.
+    alert( isFinite(Infinity) ); // false, Infinity이기 때문입니다.
+    ```
+
+`isFinite`는 문자열이 일반 숫자인지 검증하는 데 사용되곤 합니다.
+
+```jsx
+let num = +prompt("숫자를 입력하세요.", '');
+
+// 숫자가 아닌 값을 입력하거나 Infinity, -Infinity를 입력하면 false가 출력됩니다.
+alert( isFinite(num) );
+```
+
+빈 문자열이나 공백만 있는 문자열은 `isFinite`를 포함한 모든 숫자 관련 내장 함수에서 `0`으로 취급된다는 점에 유의하시기 바랍니다.
+
+## parseInt와 parseFloat
+
+단항 덧셈 연산자 `+` 또는 `Number()`를 사용하여 숫자형으로 변형할 때 적용되는 규칙은 꽤 엄격합니다. 피연산자가 숫자가 아니면 형 변환이 실패합니다.
+
+```jsx
+alert( +"100px" ); // NaN
+```
+
+엄격한 규칙이 적용되지 않는 유일한 예외는 문자열의 처음 또는 끝에 공백이 있어서 공백을 무시할 때입니다.
+
+그런데 실무에선 CSS 등에서 `'100px'`, `'12pt'`와 같이 숫자와 단위를 함께 쓰는 경우가 흔합니다. 대다수 국가에서 `'19€'`처럼 금액 뒤에 통화 기호를 붙여 표시하기도 하죠. 숫자만 추출하는 방법이 필요해 보이네요.
+
+내장 함수 `parseInt`와 `parseFloat`는 이런 경우를 위해 만들어졌습니다.
+
+두 함수는 불가능할 때까지 문자열에서 숫자를 ‘읽습니다’. 숫자를 읽는 도중 오류가 발생하면 이미 수집된 숫자를 반환하죠. `parseInt`는 정수, `parseFloat`는 부동 소수점 숫자를 반환합니다.
+
+```jsx
+alert( parseInt('100px') ); // 100
+alert( parseFloat('12.5em') ); // 12.5
+
+alert( parseInt('12.3') ); // 12, 정수 부분만 반환됩니다.
+alert( parseFloat('12.3.4') ); // 12.3, 두 번째 점에서 숫자 읽기를 멈춥니다.
+```
+
+`parseInt`와 `parseFloat`가 `NaN`을 반환할 때도 있습니다. 읽을 수 있는 숫자가 없을 때 그렇죠.
+
+```jsx
+alert( parseInt('a123') ); // NaN, a는 숫자가 아니므로 숫자를 읽는 게 중지됩니다.
+```
+
+## 기타 수학 함수
+
+자바스크립트에서 제공하는 내장 객체 [Math](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Math)엔 다양한 수학 관련 함수와 상수들이 들어있습니다.
+
+몇 가지 예시를 살펴봅시다.
+
+**`Math.random()`**
+
+0과 1 사이의 난수를 반환합니다(1은 제외).
+
+```jsx
+alert( Math.random() ); // 0.1234567894322
+alert( Math.random() ); // 0.5435252343232
+alert( Math.random() ); // ... (무작위 수)
+```
+
+**`Math.max(a, b, c...)` / `Math.min(a, b, c...)`**
+
+인수 중 최대/최솟값을 반환합니다.
+
+```jsx
+alert( Math.max(3, 5, -10, 0, 1) ); // 5
+alert( Math.min(1, 2) ); // 1
+```
+
+**`Math.pow(n, power)`**
+
+`n`을 power번 거듭제곱한 값을 반환합니다.
+
+```jsx
+alert( Math.pow(2, 10) ); // 2의 10제곱 = 1024
+```
+
+이 외에도 삼각법을 포함한 다양한 함수와 상수가 `Math`에 있습니다. 자세한 내용은 [MDN 문서](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Math)에서 읽어보시기 바랍니다.
+
+## 요약
+
+0이 많이 붙은 큰 숫자는 다음과 같은 방법을 사용해 씁니다.
+
+- 0의 개수를 `'e'` 뒤에 추가합니다. `123e6`은 0이 6개인 숫자, `123000000`을 나타냅니다.
+- `'e'` 다음에 음수가 오면, 음수의 절댓값 만큼 10을 거듭제곱한 숫자로 주어진 숫자를 나눕니다. `123e-6`은 `0.000123`을 나타냅니다.
+
+다양한 진법을 사용할 수도 있습니다.
+
+- 자바스크립트는 특별한 변환 없이 16진수(`0x`), 8진수(`0o`), 2진수(`0b`)를 바로 사용할 수 있게 지원합니다.
+- `parseInt(str, base)`를 사용하면 `str`을 `base`진수로 바꿔줍니다(단, `2 ≤ base ≤ 36`).
+- `num.toString(base)`는 숫자를 `base`진수로 바꾸고, 이를 문자열 형태로 반환합니다.
+
+`12pt`나 `100px`과 같은 값을 숫자로 변환하는 것도 가능합니다.
+
+- `parseInt/parseFloat`를 사용하면 문자열에서 숫자만 읽고, 읽은 숫자를 에러가 발생하기 전에 반환해주는 ‘약한’ 형 변환을 사용할 수 있습니다.
+
+소수를 처리하는 데 쓰이는 메서드는 다음과 같습니다.
+
+- `Math.floor`, `Math.ceil`, `Math.trunc`, `Math.round`, `num.toFixed(precision)`를 사용하면 어림수를 구할 수 있습니다.
+- 소수를 다룰 땐 정밀도 손실에 주의하세요.
+
+이 외에도 다양한 수학 함수가 있습니다.
+
+- 수학 연산이 필요할 때 [Math](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Math) 객체를 찾아보세요. 작은 객체이지만 기본적인 연산은 대부분 다룰 수 있습니다.
+
+## 5.3 문자열
+
+자바스크립트엔 글자 하나만 저장할 수 있는 별도의 자료형이 없습니다. 텍스트 형식의 데이터는 길이에 상관없이 문자열 형태로 저장됩니다.
+
+자바스크립트에서 문자열은 페이지 인코딩 방식과 상관없이 항상 [UTF-16](https://en.wikipedia.org/wiki/UTF-16) 형식을 따릅니다.
+
+## 따옴표
+
+따옴표의 종류가 무엇이 있었는지 상기해봅시다.
+
+문자열은 작은따옴표나 큰따옴표, 백틱으로 감쌀 수 있습니다.
+
+```jsx
+let single = '작은따옴표';
+let double = "큰따옴표";
+
+let backticks = `백틱`;
+```
+
+작은따옴표와 큰따옴표는 기능상 차이가 없습니다. 그런데 백틱엔 특별한 기능이 있습니다. 표현식을 `${…}`로 감싸고 이를 백틱으로 감싼 문자열 중간에 넣어주면 해당 표현식을 문자열 중간에 쉽게 삽입할 수 있죠. 이런 방식을 템플릿 리터럴(template literal)이라고 부릅니다.
+
+```jsx
+function sum(a, b) {
+  return a + b;
+}
+
+alert(`1 + 2 = ${sum(1, 2)}.`); // 1 + 2 = 3.
+```
+
+백틱을 사용하면 문자열을 여러 줄에 걸쳐 작성할 수도 있습니다.
+
+```jsx
+let guestList = `손님:
+ * John
+ * Pete
+ * Mary
+`;
+
+alert(guestList); // 손님 리스트를 여러 줄에 걸쳐 작성함
+```
+
+자연스럽게 여러 줄의 문자열이 만들어졌네요. 작은따옴표나 큰따옴표를 사용하면 위와 같은 방식으로 여러 줄짜리 문자열을 만들 수 없습니다.
+
+아래 예시를 실행해봅시다. 에러가 발생합니다.
+
+```jsx
+let guestList = "손님: // Error: Invalid or unexpected token
+  * John";
+```
+
+작은따옴표나 큰따옴표로 문자열을 표현하는 방식은 자바스크립트가 만들어졌을 때부터 있었습니다. 이때는 문자열을 여러 줄에 걸쳐 작성할 생각조차 못 했던 시기였죠. 백틱은 그 이후에 등장한 문법이기 때문에 따옴표보다 다양한 기능을 제공합니다.
+
+백틱은 '템플릿 함수(template function)'에서도 사용됩니다. `func`string`` 같이 첫 번째 백틱 바로 앞에 함수 이름(`func`)을 써주면, 이 함수는 백틱 안의 문자열 조각이나 표현식 평가 결과를 인수로 받아 자동으로 호출됩니다. 이런 기능을 '태그드 템플릿(tagged template)'이라 부르는데, 태그드 템플릿을 사용하면 사용자 지정 템플릿에 맞는 문자열을 쉽게 만들 수 있습니다. 태그드 템플릿과 템플릿 함수에 대한 자세한 내용은 MDN [문서](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates)에서 확인해보세요. 참고로 이 기능은 자주 사용되진 않습니다.
+
+## 특수 기호
+
+'줄 바꿈 문자(newline character)'라 불리는 특수기호 `\n`을 사용하면 작은따옴표나 큰따옴표로도 여러 줄 문자열을 만들 수 있습니다.
+
+```jsx
+let guestList = "손님:\n * John\n * Pete\n * Mary";
+
+alert(guestList); // 손님 리스트를 여러 줄에 걸쳐 작성함
+```
+
+따옴표를 이용해 만든 여러 줄 문자열과 백틱을 이용해 만든 여러 줄 문자열은 표현 방식만 다를 뿐 차이가 없습니다.
+
+```jsx
+let str1 = "Hello\nWorld"; // '줄 바꿈 기호'를 사용해 두 줄짜리 문자열을 만듦
+
+// 백틱과 일반적인 줄 바꿈 방법(엔터)을 사용해 두 줄짜리 문자열을 만듦
+let str2 = `Hello
+World`;
+
+alert(str1 == str2); // true
+```
+
+자바스크립트엔 줄 바꿈 문자를 비롯한 다양한 ‘특수’ 문자들이 있습니다.
+
+```jsx
+alert( "\u00A9" ); // ©
+alert( "\u{20331}" ); // 佫, 중국어(긴 유니코드)
+alert( "\u{1F60D}" ); // 😍, 웃는 얼굴 기호(긴 유니코드)
+```
+
+모든 특수 문자는 '이스케이프 문자(escape character)'라고도 불리는 역슬래시 (backslash character) `\`로 시작합니다.
+
+역슬래시는 문자열 내에 따옴표를 넣을 때도 사용할 수 있습니다.
+
+```jsx
+alert( 'I*\'*m the Walrus!' ); // *I'm* the Walrus!
+```
+
+위 예시에서 살펴본 바와 같이 문자열 내의 따옴표엔 `\`를 꼭 붙여줘야 합니다. 이렇게 하지 않으면 자바스크립트는 해당 따옴표가 문자열을 닫는 용도로 사용된 것이라 해석하기 때문입니다.
+
+이스케이프 문자는 문자열을 감쌀 때 사용한 따옴표와 동일한 따옴표에만 붙여주면 됩니다. 문자열 내에서 좀 더 우아하게 따옴표를 사용하려면 아래와 같이 따옴표 대신 백틱으로 문자열을 감싸주면 됩니다.
+
+```jsx
+alert( `I'm the Walrus!` ); // I'm the Walrus!
+```
+
+역슬래시 `\`는 문자열을 정확하게 읽기 위한 용도로 만들어졌으므로 `\`는 제 역할이 끝나면 사라집니다. 메모리에 저장되는 문자열엔 `\`가 없습니다. 앞선 예시들을 실행했을 때 뜨는 `alert` 창을 통해 이를 확인할 수 있습니다.
+
+그렇다면 문자열 안에 역슬래시 `\`를 보여줘야 하는 경우엔 어떻게 해야 할까요?
+
+`\\`같이 역슬래시를 두 개 붙이면 됩니다.
+
+```jsx
+alert( `역슬래시: \\` ); // 역슬래시: \
+```
+
+## 문자열의 길이
+
+`length` 프로퍼티엔 문자열의 길이가 저장됩니다.
+
+```jsx
+alert( `My\n`.length ); // 3
+```
+
+`\n`은 ‘특수 문자’ 하나로 취급되기 때문에 `My\n`의 길이는 `3`입니다.
+
+## 특정 글자에 접근하기
+
+문자열 내 특정 위치인 `pos`에 있는 글자에 접근하려면 `[pos]`같이 대괄호를 이용하거나 [str.charAt(pos)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/charAt)라는 메서드를 호출하면 됩니다. 위치는 0부터 시작합니다.
+
+```jsx
+let str = `Hello`;
+
+// 첫 번째 글자
+alert( str[0] ); // H
+alert( str.charAt(0) ); // H
+
+// 마지막 글자
+alert( str[str.length - 1] ); // o
+```
+
+근래에는 대괄호를 이용하는 방식을 사용합니다. `charAt`은 하위 호환성을 위해 남아있는 메서드라고 생각하시면 됩니다.
+
+두 접근 방식의 차이는 반환할 글자가 없을 때 드러납니다. 접근하려는 위치에 글자가 없는 경우 `[]`는 `undefined`를, `charAt`은 빈 문자열을 반환합니다.
+
+```jsx
+let str = `Hello`;
+
+alert( str[1000] ); // undefined
+alert( str.charAt(1000) ); // '' (빈 문자열)
+```
+
+`for..of`를 사용하면 문자열을 구성하는 글자를 대상으로 반복 작업을 할 수 있습니다.
+
+```jsx
+for (let char of "Hello") {
+  alert(char); // H,e,l,l,o (char는 순차적으로 H, e, l, l, o가 됩니다.)
+}
+```
+
+## 문자열의 불변성
+
+문자열은 수정할 수 없습니다. 따라서 문자열의 중간 글자 하나를 바꾸려고 하면 에러가 발생합니다.
+
+직접 실습해봅시다.
+
+```jsx
+let str = 'Hi';
+
+str[0] = 'h'; // Error: Cannot assign to read only property '0' of string 'Hi'
+alert( str[0] ); // 동작하지 않습니다.
+```
+
+이런 문제를 피하려면 완전히 새로운 문자열을 하나 만든 다음, 이 문자열을 `str`에 할당하면 됩니다.
+
+```jsx
+let str = 'Hi';
+
+str = 'h' + str[1]; // 문자열 전체를 교체함
+
+alert( str ); // hi
+```
+
+유사한 예시는 이어지는 절에서 살펴보겠습니다.
+
+## 대·소문자 변경하기
+
+메서드 [toLowerCase()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/toLowerCase)와 [toUpperCase()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/toUpperCase)는 대문자를 소문자로, 소문자를 대문자로 변경(케이스 변경)시켜줍니다.
+
+```jsx
+alert( 'Interface'.toUpperCase() ); // INTERFACE
+alert( 'Interface'.toLowerCase() ); // interface
+```
+
+글자 하나의 케이스만 변경하는 것도 가능합니다.
+
+```jsx
+alert( 'Interface'[0].toLowerCase() ); // 'i'
+```
+
+## 부분 문자열 찾기
+
+문자열에서 부분 문자열(substring)을 찾는 방법은 여러 가지가 있습니다.
+
+### str.indexOf
+
+첫 번째 방법은 [str.indexOf(substr, pos)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf) 메서드를 이용하는 것입니다.
+
+이 메서드는 문자열 `str`의 `pos`에서부터 시작해, 부분 문자열 `substr`이 어디에 위치하는지를 찾아줍니다. 원하는 부분 문자열을 찾으면 위치를 반환하고 그렇지 않으면 `-1`을 반환합니다.
+
+```jsx
+let str = 'Widget with id';
+
+alert( str.indexOf('Widget') ); // 0, str은 'Widget'으로 시작함
+alert( str.indexOf('widget') ); // -1, indexOf는 대·소문자를 따지므로 원하는 문자열을 찾지 못함
+
+alert( str.indexOf("id") ); // 1, "id"는 첫 번째 위치에서 발견됨 (Widget에서 id)
+```
+
+`str.indexOf(substr, pos)`의 두 번째 매개변수 `pos`는 선택적으로 사용할 수 있는데, 이를 명시하면 검색이 해당 위치부터 시작됩니다.
+
+부분 문자열 `"id"`는 위치 `1`에서 처음 등장하는데, 두 번째 인수에 `2`를 넘겨 `"id"`가 두 번째로 등장하는 위치가 어디인지 알아봅시다.
+
+```jsx
+let str = 'Widget with id';
+
+alert( str.indexOf('id', 2) ) // 12
+```
+
+문자열 내 부분 문자열 전체를 대상으로 무언가를 하고 싶다면 반복문 안에 `indexOf`를 사용하면 됩니다. 반복문이 하나씩 돌 때마다 검색 시작 위치가 갱신되면서 `indexOf`가 새롭게 호출됩니다.
+
+```jsx
+let str = 'As sly as a fox, as strong as an ox';
+
+let target = 'as'; // as를 찾아봅시다.
+
+let pos = 0;
+while (true) {
+  let foundPos = str.indexOf(target, pos);
+  if (foundPos == -1) break;
+
+  alert( `위치: ${foundPos}` );
+  pos = foundPos + 1; // 다음 위치를 기준으로 검색을 이어갑니다.
+}
+```
+
+동일한 알고리즘을 사용해 코드만 짧게 줄이면 다음과 같습니다.
+
+```jsx
+let str = "As sly as a fox, as strong as an ox";
+let target = "as";
+
+*let pos = -1;
+while ((pos = str.indexOf(target, pos + 1)) != -1) {
+  alert( `위치: ${pos}` );
+}*
+```
+
+`if`문의 조건식에 `indexOf`를 쓸 때 주의할 점이 하나 있습니다. 아래와 같이 코드들 작성하면 원하는 결과를 얻을 수 없습니다.
+
+```jsx
+let str = "Widget with id";
+
+if (str.indexOf("Widget")) {
+    alert("찾았다!"); // 의도한 대로 동작하지 않습니다.
+}
+```
+
+`str.indexOf("Widget")`은 `0`을 반환하는데, `if`문에선 `0`을 `false`로 간주하므로 `alert` 창이 뜨지 않습니다.
+
+따라서 부분 문자열 여부를 검사하려면 아래와 같이 `-1`과 비교해야 합니다.
+
+```jsx
+let str = "Widget with id";
+
+*if (str.indexOf("Widget") != -1) {*alert("찾았다!"); // 의도한 대로 동작합니다.
+}
+```
+
+### 비트 NOT 연산자를 사용한 기법
+
+오래전부터 전해 오는 [비트(bitwise) NOT 연산자](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators#Bitwise_NOT) `~`를 사용한 기법 하나를 소개해드리겠습니다. 비트 NOT 연산자는 피연산자를 32비트 정수로 바꾼 후(소수부는 모두 버려짐) 모든 비트를 반전합니다.
+
+따라서 `n`이 32비트 정수일 때 `~n`은 `-(n+1)`이 됩니다.
+
+예시:
+
+```jsx
+alert( ~2 ); // -3, -(2+1)과 같음
+alert( ~1 ); // -2, -(1+1)과 같음
+alert( ~0 ); // -1, -(0+1)과 같음
+*alert( ~-1 ); // 0, -(-1+1)과 같음*
+```
+
+위 예시에서 본 바와 같이 부호가 있는 32비트 정수 `n` 중, `~n`을 `0`으로 만드는 경우는 `n == -1`일 때가 유일합니다.
+
+이를 응용해서 `indexOf`가 `-1`을 반환하지 않는 경우를 `if ( ~str.indexOf("...") )`로 검사해 봅시다.
+
+이렇게 `~str.indexOf("...")`를 사용하면 코드의 길이를 줄일 수 있습니다.
+
+```jsx
+let str = "Widget";
+
+if (~str.indexOf("Widget")) {
+  alert( '찾았다!' ); // 의도한 대로 동작합니다.
+}
+```
+
+사실 이렇게 언어 특유의 기능을 사용해 직관적이지 않은 코드를 작성하는 것을 추천해 드리진 않습니다. 그렇지만 위와 같은 기법은 오래된 스크립트에서 쉽게 만날 수 있기 때문에 알아두어야 합니다.
+
+`if (~str.indexOf(...))` 패턴의 코드를 만나면 '부분 문자열인지 확인’하는 코드라고 기억해둡시다.
+
+참고로 `-1` 이외에도 `~` 연산자 적용 시 `0`을 반환하는 숫자는 다양합니다. 아주 큰 숫자에 `~` 연산자를 적용하면 32비트 정수로 바꾸는 과정에서 잘림 현상이 발생하기 때문이죠. 이런 숫자 중 가장 큰 숫자는 `4294967295`입니다(`~4294967295`는 `0`임). 문자열이 아주 길지 않은 경우에만 `~` 연산자가 의도한 대로 작동한다는 점을 알고 계시길 바랍니다.
+
+모던 자바스크립트에선 `.includes` 메서드(아래에서 배움)를 사용해 부분 문자열 포함 여부를 검사합니다. 이런 기법은 오래된 자바스크립트에서만 볼 수 있습니다.
+
+### includes, startsWith, endsWith
+
+비교적 근래에 나온 메서드인 [str.includes(substr, pos)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/includes)는 `str`에 부분 문자열 `substr`이 있는지에 따라 `true`나 `false`를 반환합니다.
+
+부분 문자열의 위치 정보는 필요하지 않고 포함 여부만 알고 싶을 때 적합한 메서드입니다.
+
+```jsx
+alert( "Widget with id".includes("Widget") ); // true
+
+alert( "Hello".includes("Bye") ); // false
+```
+
+`str.includes`에도 `str.indexOf`처럼 두 번째 인수를 넘기면 해당 위치부터 부분 문자열을 검색합니다.
+
+```jsx
+alert( "Widget".includes("id") ); // true
+alert( "Widget".includes("id", 3) ); // false, 세 번째 위치 이후엔 "id"가 없습니다.
+```
+
+메서드 [str.startsWith](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith)와 [str.endsWith](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith)는 메서드 이름 그대로 문자열 `str`이 특정 문자열로 시작하는지(start with) 여부와 특정 문자열로 끝나는지(end with) 여부를 확인할 때 사용할 수 있습니다.
+
+```jsx
+alert( "Widget".startsWith("Wid") ); // true, "Widget"은 "Wid"로 시작합니다.
+alert( "Widget".endsWith("get") ); // true, "Widget"은 "get"으로 끝납니다.
+```
+
+## 부분 문자열 추출하기
+
+자바스크립트엔 부분 문자열 추출과 관련된 메서드가 세 가지 있습니다. 세 가지 메서드 `substring`, `substr`, `slice`를 하나씩 알아봅시다.
+
+**`str.slice(start [, end])`**
+
+문자열의 `start`부터 `end`까지(`end`는 미포함)를 반환합니다.
+
+```jsx
+let str = "stringify";
+alert( str.slice(0, 5) ); // 'strin', 0번째부터 5번째 위치까지(5번째 위치의 글자는 포함하지 않음)
+alert( str.slice(0, 1) ); // 's', 0번째부터 1번째 위치까지(1번째 위치의 자는 포함하지 않음)
+
+```
+
+두 번째 인수가 생략된 경우엔, 명시한 위치부터 문자열 끝까지를 반환합니다.
+
+```jsx
+let str = "st*ringify*";
+alert( str.slice(2) ); // ringify, 2번째부터 끝까지
+
+```
+
+`start`와 `end`는 음수가 될 수도 있습니다. 음수를 넘기면 문자열 끝에서부터 카운팅을 시작합니다.
+
+```jsx
+let str = "strin*gif*y";
+
+// 끝에서 4번째부터 시작해 끝에서 1번째 위치까지
+alert( str.slice(-4, -1) ); // gif
+```
+
+**`str.substring(start [, end])`**
+
+`start`와 `end` *사이*에 있는 문자열을 반환합니다.
+
+`substring`은 `slice`와 아주 유사하지만 `start`가 `end`보다 커도 괜찮다는 데 차이가 있습니다.
+
+```jsx
+let str = "st*ring*ify";
+
+// 동일한 부분 문자열을 반환합니다.
+alert( str.substring(2, 6) ); // "ring"
+alert( str.substring(6, 2) ); // "ring"
+
+// slice를 사용하면 결과가 다릅니다.
+alert( str.slice(2, 6) ); // "ring" (같음)
+alert( str.slice(6, 2) ); // "" (빈 문자열)
+
+```
+
+`substring`은 음수 인수를 허용하지 않습니다. 음수는 `0`으로 처리됩니다.
+
+**`str.substr(start [, length])`**
+
+`start`에서부터 시작해 `length` 개의 글자를 반환합니다.
+
+`substr`은 끝 위치 대신에 길이를 기준으로 문자열을 추출한다는 점에서 `substring`과 `slice`와 차이가 있습니다.
+
+```jsx
+let str = "st*ring*ify";
+alert( str.substr(2, 4) ); // ring, 두 번째부터 글자 네 개
+
+```
+
+첫 번째 인수가 음수면 뒤에서부터 개수를 셉니다.
+
+```jsx
+let str = "strin*gi*fy";
+alert( str.substr(-4, 2) ); // gi, 끝에서 네 번째 위치부터 글자 두 개
+```
+
+## 문자열 비교하기
+
+[비교 연산자](https://ko.javascript.info/comparison) 챕터에서 알아보았듯이 문자열을 비교할 땐 알파벳 순서를 기준으로 글자끼리 비교가 이뤄집니다.
+
+그런데 아래와 같이 몇 가지 이상해 보이는 것들이 있습니다.
+
+1. 소문자는 대문자보다 항상 큽니다.
+
+    ```jsx
+    alert( 'a' > 'Z' ); // true
+    ```
+
+2. 발음 구별 기호(diacritical mark)가 붙은 문자는 알파벳 순서 기준을 따르지 않습니다.
+
+    ```jsx
+    alert( 'Österreich' > 'Zealand' ); // true (Österreich는 오스트리아를 독일어로 표기한 것임 - 옮긴이)
+    ```
+
+    이런 예외사항 때문에 이름순으로 국가를 나열할 때 예상치 못한 결과가 나올 수 있습니다. 사람들은 `Österreich`가 `Zealand`보다 앞서 나올 것이라 예상하는데 그렇지 않죠.
+
+자바스크립트 내부에서 문자열이 어떻게 표시되는지 상기하며 원인을 알아봅시다.
+
+모든 문자열은 [UTF-16](https://en.wikipedia.org/wiki/UTF-16)을 사용해 인코딩되는데, UTF-16에선 모든 글자가 숫자 형식의 코드와 매칭됩니다. 코드로 글자를 얻거나 글자에서 연관 코드를 알아낼 수 있는 메서드는 다음과 같습니다.
+
+**`str.codePointAt(pos)`**
+
+`pos`에 위치한 글자의 코드를 반환합니다.
+
+```jsx
+// 글자는 같지만 케이스는 다르므로 반환되는 코드가 다릅니다.
+alert( "z".codePointAt(0) ); // 122
+alert( "Z".codePointAt(0) ); // 90
+```
+
+**`String.fromCodePoint(code)`**
+
+숫자 형식의 `code`에 대응하는 글자를 만들어줍니다.
+
+```jsx
+alert( String.fromCodePoint(90) ); // Z
+```
+
+`\u` 뒤에 특정 글자에 대응하는 16진수 코드를 붙이는 방식으로도 원하는 글자를 만들 수 있습니다.
+
+```jsx
+// 90을 16진수로 변환하면 5a입니다.
+alert( '\u005a' ); // Z
+```
+
+이제 이 배경지식을 가지고 코드 `65`와 `220` 사이(라틴계열 알파벳과 기타 글자들이 여기에 포함됨)에 대응하는 글자들을 출력해봅시다.
+
+```jsx
+let str = '';
+
+for (let i = 65; i <= 220; i++) {
+  str += String.fromCodePoint(i);
+}
+alert( str );
+// ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+// ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜ
+```
+
+보이시나요? 대문자 알파벳이 가장 먼저 나오고 특수 문자 몇 개가 나온 다음에 소문자 알파벳이 나오네요. `Ö`은 거의 마지막에 출력됩니다.
+
+이제 왜 `a > Z`인지 아시겠죠?
+
+글자는 글자에 대응하는 숫자 형식의 코드를 기준으로 비교됩니다. 코드가 크면 대응하는 글자 역시 크다고 취급되죠. 따라서 `a`(코드:97)는 `Z`(코드:90) 보다 크다는 결론이 도출됩니다.
+
+- 알파벳 소문자의 코드는 대문자의 코드보다 크므로 소문자는 대문자 뒤에 옵니다.
+- `Ö` 같은 글자는 일반 알파벳과 멀리 떨어져 있습니다. `Ö`의 코드는 알파벳 소문자의 코드보다 훨씬 큽니다.
+
+### 문자열 제대로 비교하기
+
+언어마다 문자 체계가 다르기 때문에 문자열을 ‘제대로’ 비교하는 알고리즘을 만드는 건 생각보다 간단하지 않습니다.
+
+문자열을 비교하려면 일단 페이지에서 어떤 언어를 사용하고 있는지 브라우저가 알아야 합니다.
+
+다행히도 모던 브라우저 대부분이 국제화 관련 표준인 [ECMA-402](http://www.ecma-international.org/ecma-402/1.0/ECMA-402.pdf)를 지원합니다(IE10은 아쉽게도 [Intl.js](https://github.com/andyearnshaw/Intl.js/) 라이브러리를 사용해야 합니다).
+
+ECMA-402엔 언어가 다를 때 적용할 수 있는 문자열 비교 규칙과 이를 준수하는 메서드가 정의되어있습니다.
+
+[str.localeCompare(str2)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare)를 호출하면 ECMA-402에서 정의한 규칙에 따라 `str`이 `str2`보다 작은지, 같은지, 큰지를 나타내주는 정수가 반환됩니다.
+
+- `str`이 `str2`보다 작으면 음수를 반환합니다.
+- `str`이 `str2`보다 크면 양수를 반환합니다.
+- `str`과 `str2`이 같으면 `0`을 반환합니다.
+
+```jsx
+alert( 'Österreich'.localeCompare('Zealand') ); // -1
+```
+
+`localeCompare`엔 선택 인수 두 개를 더 전달할 수 있습니다. 기준이 되는 언어를 지정(아무것도 지정하지 않았으면 호스트 환경의 언어가 기준 언어가 됨)해주는 인수와 대·소문자를 구분할지나 `"a"`와 `"á"`를 다르게 취급할지에 대한 것을 설정해주는 인수가 더 있죠. 자세한 사항은 관련 [페이지](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare)에서 확인해 보시기 바랍니다.
+
+## 요약
+
+- 자바스크립트엔 세 종류의 따옴표가 있는데, 이 중 하나인 백틱은 문자열을 여러 줄에 걸쳐 쓸 수 있게 해주고 문자열 중간에 `${…}`을 사용해 표현식도 넣을 수 있다는 점이 특징입니다.
+- 자바스크립트에선 UTF-16을 사용해 문자열을 인코딩합니다.
+- `\n` 같은 특수 문자를 사용할 수 있습니다. `\u...`를 사용하면 해당 문자의 유니코드를 사용해 글자를 만들 수 있습니다.
+- 문자열 내의 글자 하나를 얻으려면 대괄호 `[]`를 사용하세요.
+- 부분 문자열을 얻으려면 `slice`나 `substring`을 사용하세요.
+- 소문자로 바꾸려면 `toLowerCase`, 대문자로 바꾸려면 `toUpperCase`를 사용하세요.
+- `indexOf`를 사용하면 부분 문자열의 위치를 얻을 수 있습니다. 부분 문자열 여부만 알고 싶다면 `includes/startsWith/endsWith`를 사용하면 됩니다.
+- 특정 언어에 적합한 비교 기준 사용해 문자열을 비교하려면 `localeCompare`를 사용하세요. 이 메서드를 사용하지 않으면 글자 코드를 기준으로 문자열이 비교됩니다.
+
+이외에도 문자열에 쓸 수 있는 유용한 메서드 몇 가지가 있습니다.
+
+- `str.trim()` – 문자열 앞과 끝의 공백 문자를 다듬어 줍니다(제거함).
+- `str.repeat(n)` – 문자열을 `n`번 반복합니다.
+- 이 외의 메서드는 [MDN 문서](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String)에서 확인해보시기 바랍니다.
