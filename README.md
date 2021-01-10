@@ -69,6 +69,14 @@
 
     [5.4 배열](#54-배열)
 
+    [5.5 배열과 메서드](#55-배열과-메서드)
+
+    [5.6 iterable 객체](#56-iterable-객체)
+
+    [5.7 맵과 셋](#57-맵과-셋)
+
+    [5.8 위크맵과 위크셋](#58-위크맵과-위크셋)
+
 # Let Declaration
 ## 1. 자바스크립트란?
 
@@ -6365,3 +6373,1693 @@ alert( 'Österreich'.localeCompare('Zealand') ); // -1
 - `str.trim()` – 문자열 앞과 끝의 공백 문자를 다듬어 줍니다(제거함).
 - `str.repeat(n)` – 문자열을 `n`번 반복합니다.
 - 이 외의 메서드는 [MDN 문서](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String)에서 확인해보시기 바랍니다.
+
+## 5.4 배열
+
+키를 사용해 식별할 수 있는 값을 담은 컬렉션은 객체라는 자료구조를 이용해 저장하는데, 객체만으로도 다양한 작업을 할 수 있습니다.
+
+그런데 개발을 진행하다 보면 첫 번째 요소, 두 번째 요소, 세 번째 요소 등과 같이 *순서가 있는 컬렉션*이 필요할 때가 생기곤 합니다. 사용자나 물건, HTML 요소 목록같이 일목요연하게 순서를 만들어 정렬하기 위해서 말이죠.
+
+순서가 있는 컬렉션을 다뤄야 할 때 객체를 사용하면 순서와 관련된 메서드가 없어 그다지 편리하지 않습니다. 객체는 태생이 순서를 고려하지 않고 만들어진 자료구조이기 때문에 객체를 이용하면 새로운 프로퍼티를 기존 프로퍼티 ‘사이에’ 끼워 넣는 것도 불가능합니다.
+
+이럴 땐 순서가 있는 컬렉션을 저장할 때 쓰는 자료구조인 `배열`을 사용할 수 있습니다.
+
+## 배열 선언
+
+아래 두 문법을 사용하면 빈 배열을 만들 수 있습니다.
+
+```jsx
+let arr = new Array();
+let arr = [];
+```
+
+대부분 두 번째 방법으로 배열을 선언하는데, 이때 대괄호 안에 초기 요소를 넣어주는 것도 가능합니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "자두"];
+```
+
+각 배열 요소엔 0부터 시작하는 숫자(인덱스)가 매겨져 있습니다. 이 숫자들은 배열 내 순서를 나타냅니다.
+
+배열 내 특정 요소를 얻고 싶다면 대괄호 안에 순서를 나타내는 숫자인 인덱스를 넣어주면 됩니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "자두"];
+
+alert( fruits[0] ); // 사과
+alert( fruits[1] ); // 오렌지
+alert( fruits[2] ); // 자두
+```
+
+같은 방법으로 요소를 수정할 수 있습니다.
+
+```jsx
+fruits[2] = '배'; // 배열이 ["사과", "오렌지", "배"]로 바뀜
+```
+
+새로운 요소를 배열에 추가하는 것도 가능합니다.
+
+```jsx
+fruits[3] = '레몬'; // 배열이 ["사과", "오렌지", "배", "레몬"]으로 바뀜
+```
+
+`length`를 사용하면 배열에 담긴 요소가 몇 개인지 알아낼 수 있습니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "자두"];
+
+alert( fruits.length ); // 3
+```
+
+`alert`를 사용해 요소 전체를 출력하는 것도 가능합니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "자두"];
+
+alert( fruits ); // 사과,오렌지,자두
+```
+
+배열 요소의 자료형엔 제약이 없습니다.
+
+```jsx
+// 요소에 여러 가지 자료형이 섞여 있습니다.
+let arr = [ '사과', { name: '이보라' }, true, function() { alert('안녕하세요.'); } ];
+
+// 인덱스가 1인 요소(객체)의 name 프로퍼티를 출력합니다.
+alert( arr[1].name ); // 이보라
+
+// 인덱스가 3인 요소(함수)를 실행합니다.
+arr[3](); // 안녕하세요.
+```
+
+## pop·push와 shift·unshift
+
+[큐(queue)](https://en.wikipedia.org/wiki/Queue_(abstract_data_type))는 배열을 사용해 만들 수 있는 대표적인 자료구조로, 배열과 마찬가지로 순서가 있는 컬렉션을 저장하는 데 사용합니다. 큐에서 사용하는 주요 연산은 아래와 같습니다.
+
+- `push` – 맨 끝에 요소를 추가합니다.
+- `shift` – 제일 앞 요소를 꺼내 제거한 후 남아있는 요소들을 앞으로 밀어줍니다. 이렇게 하면 두 번째 요소가 첫 번째 요소가 됩니다.
+
+배열엔 두 연산을 가능케 해주는 내장 메서드 `push`와 `pop`이 있습니다.
+
+화면에 순차적으로 띄울 메시지를 비축해 놓을 자료 구조를 만들 때 큐를 사용하는 것처럼 큐는 실무에서 상당히 자주 쓰이는 자료구조입니다.
+
+배열은 큐 이외에 [스택(stack)](https://en.wikipedia.org/wiki/Stack_(abstract_data_type))이라 불리는 자료구조를 구현할 때도 쓰입니다.
+
+스택에서 사용하는 연산은 아래와 같습니다.
+
+- `push` – 요소를 스택 끝에 집어넣습니다.
+- `pop` – 스택 끝 요소를 추출합니다.
+
+스택은 이처럼 '한쪽 끝’에 요소를 더하거나 뺄 수 있게 해주는 자료구조입니다.
+
+스택은 흔히 카드 한 벌과 비교됩니다. 쌓여있는 카드 맨 위에 새로운 카드를 더해주거나 빼는 것처럼 스택도 '한쪽 끝’에 요소를 집어넣거나 추출 할 수 있기 때문입니다.
+
+스택을 사용하면 가장 나중에 집어넣은 요소가 먼저 나옵니다. 이런 특징을 줄여서 후입선출(Last-In-First-Out, LIFO)이라고 부릅니다. 반면 큐를 사용하면 먼저 집어넣은 요소가 먼저 나오기 때문에 큐는 선입선출(First-In-First-Out, FIFO) 자료구조라고 부릅니다.
+
+자바스크립트 배열을 사용하면 큐와 스택 둘 다를 만들 수 있습니다. 이 자료구조들은 배열의 처음이나 끝에 요소를 더하거나 빼는 데 사용되죠.
+
+이렇게 처음이나 끝에 요소를 더하거나 빼주는 연산을 제공하는 자료구조를 컴퓨터 과학 분야에선 [데큐(deque, Double Ended Queue)](https://en.wikipedia.org/wiki/Double-ended_queue)라고 부릅니다.
+
+**아래는 배열 끝에 무언가를 해주는 메서드입니다.**
+
+**`pop`**
+
+배열 끝 요소를 제거하고, 제거한 요소를 반환합니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "배"];
+
+alert( fruits.pop() ); // 배열에서 "배"를 제거하고 제거된 요소를 얼럿창에 띄웁니다.
+
+alert( fruits ); // 사과,오렌지
+```
+
+**`push`**
+
+배열 끝에 요소를 추가합니다.
+
+```jsx
+let fruits = ["사과", "오렌지"];
+
+fruits.push("배");
+
+alert( fruits ); // 사과,오렌지,배
+fruits.push(...)를 호출하는 것은 fruits[fruits.length] = ...하는 것과 같은 효과를 보입니다.
+```
+
+**아래는 배열 앞에 무언가를 해주는 메서드입니다.**
+
+**`shift`**
+
+배열 앞 요소를 제거하고, 제거한 요소를 반환합니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "배"];
+
+alert( fruits.shift() ); // 배열에서 "사과"를 제거하고 제거된 요소를 얼럿창에 띄웁니다.
+
+alert( fruits ); // 오렌지,배
+```
+
+**`unshift`**
+
+배열 앞에 요소를 추가합니다.
+
+```jsx
+let fruits = ["오렌지", "배"];
+
+fruits.unshift('사과');
+
+alert( fruits ); // 사과,오렌지,배
+```
+
+`push`와 `unshift`는 요소 여러 개를 한 번에 더해줄 수도 있습니다.
+
+```jsx
+let fruits = ["사과"];
+
+fruits.push("오렌지", "배");
+fruits.unshift("파인애플", "레몬");
+
+// ["파인애플", "레몬", "사과", "오렌지", "배"]
+alert( fruits );
+```
+
+## 배열의 내부 동작 원리
+
+배열은 특별한 종류의 객체입니다. 배열 `arr`의 요소를 `arr[0]`처럼 대괄호를 사용해 접근하는 방식은 객체 문법에서 왔습니다. 다만 배열은 키가 숫자라는 점만 다릅니다.
+
+숫자형 키를 사용함으로써 배열은 객체 기본 기능 이외에도 순서가 있는 컬렉션을 제어하게 해주는 특별한 메서드를 제공합니다. `length`라는 프로퍼티도 제공하죠. 그렇지만 어쨌든 배열의 본질은 객체입니다.
+
+이렇게 배열은 자바스크립트의 일곱 가지 원시 자료형에 해당하지 않고, 원시 자료형이 아닌 객체형에 속하기 때문에 객체처럼 동작합니다.
+
+예시를 하나 살펴봅시다. 배열은 객체와 마찬가지로 참조를 통해 복사됩니다.
+
+```jsx
+let fruits = ["바나나"]
+
+let arr = fruits; // 참조를 복사함(두 변수가 같은 객체를 참조)
+
+alert( arr === fruits ); // true
+
+arr.push("배"); // 참조를 이용해 배열을 수정합니다.
+
+alert( fruits ); // 바나나,배 - 요소가 두 개가 되었습니다.
+```
+
+배열을 배열답게 만들어주는 것은 특수 내부 표현방식입니다. 자바스크립트 엔진은 아래쪽 그림에서처럼 배열의 요소를 인접한 메모리 공간에 차례로 저장해 연산 속도를 높입니다. 이 방법 이외에도 배열 관련 연산을 더 빠르게 해주는 최적화 기법은 다양합니다.
+
+그런데 개발자가 배열을 '순서가 있는 자료의 컬렉션’처럼 다루지 않고 일반 객체처럼 다루면 이런 기법들이 제대로 동작하지 않습니다.
+
+```jsx
+let fruits = []; // 빈 배열을 하나 만듭니다.
+
+fruits[99999] = 5; // 배열의 길이보다 훨씬 큰 숫자를 사용해 프로퍼티를 만듭니다.
+
+fruits.age = 25; // 임의의 이름을 사용해 프로퍼티를 만듭니다.
+```
+
+배열은 객체이므로 예시처럼 원하는 프로퍼티를 추가해도 문제가 발생하지 않습니다.
+
+그런데 이렇게 코드를 작성하면 자바스크립트 엔진이 배열을 일반 객체처럼 다루게 되어 배열을 다룰 때만 적용되는 최적화 기법이 동작하지 않아 배열 특유의 이점이 사라집니다.
+
+잘못된 방법의 예는 다음과 같습니다.
+
+- `arr.test = 5` 같이 숫자가 아닌 값을 프로퍼티 키로 사용하는 경우
+- `arr[0]`과 `arr[1000]`만 추가하고 그사이에 아무런 요소도 없는 경우
+- `arr[1000]`, `arr[999]`같이 요소를 역순으로 채우는 경우
+
+배열은 *순서가 있는 자료*를 저장하는 용도로 만들어진 특수한 자료구조입니다. 배열 내장 메서드들은 이런 용도에 맞게 만들어졌죠. 자바스크립트 엔진은 이런 특성을 고려하여 배열을 신중하게 조정하고, 처리하므로 배열을 사용할 땐 이런 목적에 맞게 사용해 주시기 바랍니다. 임의의 키를 사용해야 한다면 배열보단 일반 객체 `{}`가 적합한 자료구조일 확률이 높습니다.
+
+## 성능
+
+`push`와 `pop`은 빠르지만 `shift`와 `unshift`는 느립니다.
+
+배열 앞에 무언가를 해주는 메서드가 배열 끝에 무언가를 해주는 메서드보다 느린 이유를 실행 흐름을 살펴보면서 알아봅시다.
+
+```jsx
+fruits.shift(); // 배열 맨 앞의 요소를 빼줍니다.
+```
+
+`shift` 메서드를 호출한 것과 동일한 효과를 보려면 인덱스가 `0`인 요소를 제거하는 것만으론 충분하지 않습니다. 제거 대상이 아닌 나머지 요소들의 인덱스를 수정해 줘야 하죠.
+
+`shift` 연산은 아래 3가지 동작을 모두 수행해야 이뤄집니다.
+
+1. 인덱스가 `0`인 요소를 제거합니다.
+2. 모든 요소를 왼쪽으로 이동시킵니다. 이때 인덱스 `1`은 `0`, `2`는 `1`로 변합니다.
+3. `length` 프로퍼티 값을 갱신합니다.
+
+그런데 **배열에 요소가 많으면 요소가 이동하는 데 걸리는 시간이 길고 메모리 관련 연산도 많아집니다.**
+
+`unshift`를 실행했을 때도 이와 유사한 일이 일어납니다. 요소를 배열 앞에 추가하려면 일단 기존 요소들을 오른쪽으로 이동시켜야 하는데, 이때 인덱스도 바꿔줘야 합니다.
+
+그렇다면 `push`나 `pop`은 어떨까요? 이 둘은 요소 이동을 수반하지 않습니다. `pop` 메서드로 요소를 끝에서 제거하려면 마지막 요소를 제거하고 `length` 프로퍼티의 값을 줄여주기만 하면 되죠.
+
+`pop` 메서드를 호출하면 다음과 같은 동작이 일어납니다.
+
+```jsx
+fruits.pop(); // 배열 끝 요소 하나를 제거합니다.
+```
+
+**`pop` 메서드는 요소를 옮기지 않으므로 각 요소는 기존 인덱스를 그대로 유지합니다. 배열 끝에 무언가를 해주는 메서드의 실행 속도가 빠른 이유는 바로 여기에 있습니다.**
+
+`push` 메서드를 쓸 때도 유사한 동작이 일어나므로 속도가 빠릅니다.
+
+## 반복문
+
+`for`문은 배열을 순회할 때 쓰는 가장 오래된 방법입니다. 순회시엔 인덱스를 사용합니다.
+
+```jsx
+let arr = ["사과", "오렌지", "배"];
+
+*for (let i = 0; i < arr.length; i++) {*alert( arr[i] );
+}
+```
+
+배열에 적용할 수 있는 또 다른 순회 문법으론 `for..of`가 있습니다.
+
+```jsx
+let fruits = ["사과", "오렌지", "자두"];
+
+// 배열 요소를 대상으로 반복 작업을 수행합니다.
+for (let fruit of fruits) {
+  alert( fruit );
+}
+```
+
+`for..of`를 사용하면 현재 요소의 인덱스는 얻을 수 없고 값만 얻을 수 있습니다. 이 정도 기능이면 원하는 것을 충분히 구현할 수 있고 문법도 짧기 때문에 배열의 요소를 대상으로 반복 작업을 할 땐 `for..of`를 사용해 보시기 바랍니다.
+
+배열은 객체형에 속하므로 `for..in`을 사용하는 것도 가능합니다.
+
+```jsx
+let arr = ["사과", "오렌지", "배"];
+
+*for (let key in arr) {*alert( arr[key] ); // 사과, 오렌지, 배
+}
+```
+
+그런데 `for..in`은 다음과 같은 특징을 지니기 때문에 배열에 `for..in`을 사용하면 문제가 발생하므로 되도록 다른 반복문을 사용하시길 바랍니다.
+
+1. `for..in` 반복문은 *모든 프로퍼티*를 대상으로 순회합니다. 키가 숫자가 아닌 프로퍼티도 순회 대상에 포함됩니다.
+
+    브라우저나 기타 호스트 환경에서 쓰이는 객체 중, *배열*과 유사한 형태를 보이는 ‘유사 배열(array-like)’ 객체가 있습니다. 유사 배열 객체엔 배열처럼 `length` 프로퍼티도 있고 요소마다 인덱스도 붙어 있죠. 그런데 여기에 더하여 유사 배열 객체엔 배열과는 달리 키가 숫자형이 아닌 프로퍼티와 메서드가 있을 수 있습니다. 유사 배열 객체와 `for..in`을 함께 사용하면 이 모든 것을 대상으로 순회가 이뤄집니다. 따라서 ‘필요 없는’ 프로퍼티들이 문제를 일으킬 가능성이 생깁니다.
+
+2. `for..in` 반복문은 배열이 아니라 객체와 함께 사용할 때 최적화되어 있어서 배열에 사용하면 객체에 사용하는 것 대비 10~100배 정도 느립니다. `for..in` 반복문의 속도가 대체로 빠른 편이기 때문에 병목 지점에서만 문제가 되긴 합니다만, `for..in` 반복문을 사용할 땐 이런 차이를 알고 적절한 곳에 사용하시길 바랍니다.
+
+그러니 배열엔 되도록 `for..in`를 쓰지 마세요.
+
+## ‘length’ 프로퍼티
+
+배열에 무언가 조작을 가하면 `length` 프로퍼티가 자동으로 갱신됩니다. `length` 프로퍼티는 배열 내 요소의 개수가 아니라 가장 큰 인덱스에 1을 더한 값입니다.
+
+따라서 배열에 요소가 하나 있고, 이 요소의 인덱스가 아주 큰 정수라면 배열의 `length` 프로퍼티도 아주 커집니다.
+
+```jsx
+let fruits = [];
+fruits[123] = "사과";
+
+alert( fruits.length ); // 124
+```
+
+배열을 이렇게 사용하지 않도록 합시다.
+
+`length` 프로퍼티의 또 다른 독특한 특징 중 하나는 쓰기가 가능하다는 점입니다.
+
+`length`의 값을 수동으로 증가시키면 아무 일도 일어나지 않습니다. 그런데 값을 감소시키면 배열이 잘립니다. 짧아진 배열은 다시 되돌릴 수 없습니다. 예시를 통해 이를 살펴봅시다.
+
+```jsx
+let arr = [1, 2, 3, 4, 5];
+
+arr.length = 2; // 요소 2개만 남기고 잘라봅시다.
+alert( arr ); // [1, 2]
+
+arr.length = 5; // 본래 길이로 되돌려 봅시다.
+alert( arr[3] ); // undefined: 삭제된 기존 요소들이 복구되지 않습니다.
+```
+
+이런 특징을 이용하면 `arr.length = 0;`을 사용해 아주 간단하게 배열을 비울 수 있습니다.
+
+## new Array()
+
+위에서도 잠시 언급했지만 `new Array()` 문법을 사용해도 배열을 만들 수 있습니다.
+
+```jsx
+let arr = *new Array*("사과", "배", "기타");
+```
+
+대괄호 `[]`를 사용하면 더 짧은 문법으로 배열을 만들 수 있기 때문에 `new Array()`는 잘 사용되지 않는 편입니다. `new Array()`엔 다루기 까다로운 기능도 있어서 더욱더 그렇습니다.
+
+숫자형 인수 하나를 넣어서 `new Array`를 호출하면 배열이 만들어지는데, 이 배열엔 *요소가 없는 반면 길이는 인수와 같아*집니다.
+
+예시를 통해 `new Array()`의 이런 특징이 어떻게 실수를 유발할 수 있는지 알아봅시다.
+
+```jsx
+let arr = new Array(2); // 이렇게 하면 배열 [2]가 만들어질까요?
+
+alert( arr[0] ); // undefined가 출력됩니다. 요소가 하나도 없는 배열이 만들어졌네요.
+
+alert( arr.length ); // 길이는 2입니다.
+```
+
+위 예시에서 확인해 본 것처럼 `new Array(number)`를 이용해 만든 배열의 요소는 모두 `undefined` 입니다.
+
+이런 뜻밖의 상황을 마주치지 않기 위해 `new Array`의 기능을 잘 알지 않는 한 대부분의 개발자가 대괄호를 써서 배열을 만듭니다.
+
+## 다차원 배열
+
+배열 역시 배열의 요소가 될 수 있습니다. 이런 배열을 가리켜 다차원 배열(multidimensional array)이라 부릅니다. 다차원 배열은 행렬을 저장하는 용도로 쓰입니다.
+
+```jsx
+let matrix = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9]
+];
+
+alert( matrix[1][1] ); // 5, 중심에 있는 요소
+```
+
+## toString
+
+배열엔 `toString` 메서드가 구현되어 있어 이를 호출하면 요소를 쉼표로 구분한 문자열이 반환됩니다.
+
+```jsx
+let arr = [1, 2, 3];
+
+alert( arr ); // 1,2,3
+alert( String(arr) === '1,2,3' ); // true
+```
+
+```jsx
+alert( [] + 1 ); // "1"
+alert( [1] + 1 ); // "11"
+alert( [1,2] + 1 ); // "1,21"
+```
+
+배열엔 `Symbol.toPrimitive`나 `valueOf` 메서드가 없습니다. 따라서 위 예시에선 문자열로의 형 변환이 일어나 `[]`는 빈 문자열, `[1]`은 문자열 `"1"`, `[1,2]`는 문자열 `"1,2"`로 변환됩니다.
+
+이항 덧셈 연산자 `"+"`는 피연산자 중 하나가 문자열인 경우 나머지 피연산자도 문자열로 변환합니다. 따라서 위 예시는 아래 예시와 동일하게 동작합니다.
+
+```jsx
+alert( "" + 1 ); // "1"
+alert( "1" + 1 ); // "11"
+alert( "1,2" + 1 ); // "1,21"
+```
+
+## 요약
+
+배열은 특수한 형태의 객체로, 순서가 있는 자료를 저장하고 관리하는 용도에 최적화된 자료구조입니다.
+
+- 선언 방법:
+
+    ```jsx
+    // 대괄호 (가장 많이 쓰이는 방법임)
+    let arr = [item1, item2...];
+
+    // new Array (잘 쓰이지 않음)
+    let arr = new Array(item1, item2...);
+    ```
+
+    `new Array(number)`을 호출하면 길이가 `number`인 배열이 만들어지는데, 이 때 요소는 비어있습니다.
+
+- `length` 프로퍼티는 배열의 길이를 나타내줍니다. 정확히는 숫자형 인덱스 중 가장 큰 값에 1을 더한 값입니다. 배열 메서드는 `length` 프로퍼티를 자동으로 조정해줍니다.
+- `length` 값을 수동으로 줄이면 배열 끝이 잘립니다.
+
+다음 연산을 사용하면 배열을 데큐처럼 사용할 수 있습니다.
+
+- `push(...items)` – `items`를 배열 끝에 더해줍니다.
+- `pop()` – 배열 끝 요소를 제거하고, 제거한 요소를 반환합니다.
+- `shift()` – 배열 처음 요소를 제거하고, 제거한 요소를 반환합니다.
+- `unshift(...items)` – `items`를 배열 처음에 더해줍니다.
+
+아래 방법을 사용하면 모든 요소를 대상으로 반복 작업을 할 수 있습니다.
+
+- `for (let i=0; i<arr.length; i++)` – 가장 빠른 방법이고 오래된 브라우저와도 호환됩니다.
+- `for (let item of arr)` – 배열 요소에만 사용되는 모던한 문법입니다.
+- `for (let i in arr)` – 배열엔 절대 사용하지 마세요.
+
+## 5.3 배열과 메서드
+
+배열은 다양한 메서드를 제공합니다. 학습 편의를 위해 본 챕터에선 배열 메서드를 몇 개의 그룹으로 나눠 소개하도록 하겠습니다.
+
+## 요소 추가·제거 메서드
+
+배열의 맨 앞이나 끝에 요소(item)를 추가하거나 제거하는 메서드는 이미 학습한 바 있습니다.
+
+- `arr.push(...items)` – 맨 끝에 요소 추가
+- `arr.pop()` – 맨 끝 요소 제거
+- `arr.shift()` – 맨 앞 요소 제거
+- `arr.unshift(...items)` – 맨 앞에 요소 추가
+
+이 외에 요소 추가와 제거에 관련된 메서드를 알아봅시다.
+
+### splice
+
+배열에서 요소를 하나만 지우고 싶다면 어떻게 해야 할까요?
+
+배열 역시 객체형에 속하므로 프로퍼티를 지울 때 쓰는 연산자 `delete`를 사용해 볼 수 있을 겁니다.
+
+```jsx
+let arr = ["I", "go", "home"];
+
+delete arr[1]; // "go"를 삭제합니다.
+
+alert( arr[1] ); // undefined
+
+// delete를 써서 요소를 지우고 난 후 배열 --> arr = ["I",  , "home"];
+alert( arr.length ); // 3
+```
+
+원하는 대로 요소를 지웠지만 배열의 요소는 여전히 세 개이네요. `arr.length == 3`을 통해 이를 확인할 수 있습니다.
+
+이는 자연스러운 결과입니다. `delete obj.key`는 `key`를 이용해 해당 키에 상응하는 값을 지우기 때문이죠. `delete` 메서드는 제 역할을 다 한 것입니다. 그런데 우리는 삭제된 요소가 만든 빈 공간을 나머지 요소들이 자동으로 채울 것이라 기대하며 이 메서드를 썼습니다. 배열의 길이가 더 짧아지길 기대하며 말이죠.
+
+이런 기대를 충족하려면 특별한 메서드를 사용해야 합니다.
+
+[arr.splice(start)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)는 만능 스위스 맥가이버 칼 같은 메서드입니다. 요소를 자유자재로 다룰 수 있게 해주죠. 이 메서드를 사용하면 요소 추가, 삭제, 교체가 모두 가능합니다.
+
+문법은 다음과 같습니다.
+
+```jsx
+arr.splice(index[, deleteCount, elem1, ..., elemN])
+```
+
+첫 번째 매개변수는 조작을 가할 첫 번째 요소를 가리키는 `인덱스(index)`입니다. 두 번째 매개변수는 `deleteCount`로, 제거하고자 하는 요소의 개수를 나타냅니다. `elem1, ..., elemN`은 배열에 추가할 요소를 나타냅니다.
+
+splice 메서드를 사용해 작성된 예시 몇 가지를 보여드리겠습니다.
+
+먼저 요소 삭제에 관한 예시부터 살펴보겠습니다.
+
+```jsx
+let arr = ["I", "study", "JavaScript"];
+
+*arr.splice(1, 1); // 인덱스 1부터 요소 한 개를 제거*alert( arr ); // ["I", "JavaScript"]
+```
+
+쉽죠? 인덱스 `1`이 가리키는 요소부터 시작해 요소 한 개(`1`)를 지웠습니다.
+
+다음 예시에선 요소 세 개(3)를 지우고, 그 자리를 다른 요소 두 개로 교체해 보도록 하겠습니다.
+
+```jsx
+let arr = [*"I", "study", "JavaScript",* "right", "now"];
+
+// 처음(0) 세 개(3)의 요소를 지우고, 이 자리를 다른 요소로 대체합니다.
+arr.splice(0, 3, "Let's", "dance");
+
+alert( arr ) // now [*"Let's", "dance"*, "right", "now"]
+```
+
+`splice`는 삭제된 요소로 구성된 배열을 반환합니다. 아래 예시를 통해 확인해 봅시다.
+
+```jsx
+let arr = [*"I", "study",* "JavaScript", "right", "now"];
+
+// 처음 두 개의 요소를 삭제함
+let removed = arr.splice(0, 2);
+
+alert( removed ); // "I", "study" <-- 삭제된 요소로 구성된 배열
+```
+
+`splice` 메서드의 `deleteCount`를 `0`으로 설정하면 요소를 제거하지 않으면서 새로운 요소를 추가할 수 있습니다.
+
+```jsx
+let arr = ["I", "study", "JavaScript"];
+
+// 인덱스 2부터
+// 0개의 요소를 삭제합니다.
+// 그 후, "complex"와 "language"를 추가합니다.
+arr.splice(2, 0, "complex", "language");
+
+alert( arr ); // "I", "study", "complex", "language", "JavaScript"
+```
+
+### slice
+
+[arr.slice](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/slice)는 `arr.splice`와 유사해 보이지만 훨씬 간단합니다.
+
+문법:
+
+```jsx
+arr.slice([start], [end])
+```
+
+이 메서드는 `"start"` 인덱스부터 (`"end"`를 제외한) `"end"`인덱스까지의 요소를 복사한 새로운 배열을 반환합니다. `start`와 `end`는 둘 다 음수일 수 있는데 이땐, 배열 끝에서부터의 요소 개수를 의미합니다.
+
+`arr.slice`는 문자열 메서드인 `str.slice`와 유사하게 동작하는데 `arr.slice`는 서브 문자열(substring) 대신 서브 배열(subarray)을 반환한다는 점이 다릅니다.
+
+```jsx
+let arr = ["t", "e", "s", "t"];
+
+alert( arr.slice(1, 3) ); // e,s (인덱스가 1인 요소부터 인덱스가 3인 요소까지를 복사(인덱스가 3인 요소는 제외))
+
+alert( arr.slice(-2) ); // s,t (인덱스가 -2인 요소부터 제일 끝 요소까지를 복사)
+```
+
+`arr.slice()`는 인수를 하나도 넘기지 않고 호출하여 `arr`의 복사본을 만들 수 있습니다. 이런 방식은 기존의 배열을 건드리지 않으면서 배열을 조작해 새로운 배열을 만들고자 할 때 자주 사용됩니다.
+
+### concat
+
+[arr.concat](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/concat)은 기존 배열의 요소를 사용해 새로운 배열을 만들거나 기존 배열에 요소를 추가하고자 할 때 사용할 수 있습니다.
+
+문법은 다음과 같습니다.
+
+```jsx
+arr.concat(arg1, arg2...)
+```
+
+인수엔 배열이나 값이 올 수 있는데, 인수 개수엔 제한이 없습니다.
+
+메서드를 호출하면 `arr`에 속한 모든 요소와 `arg1`, `arg2` 등에 속한 모든 요소를 한데 모은 새로운 배열이 반환됩니다.
+
+인수 `argN`가 배열일 경우 배열의 모든 요소가 복사됩니다. 그렇지 않은경우(단순 값인 경우)는 인수가 그대로 복사됩니다.
+
+```jsx
+let arr = [1, 2];
+
+// arr의 요소 모두와 [3,4]의 요소 모두를 한데 모은 새로운 배열이 만들어집니다.
+alert( arr.concat([3, 4]) ); // 1,2,3,4
+
+// arr의 요소 모두와 [3,4]의 요소 모두, [5,6]의 요소 모두를 모은 새로운 배열이 만들어집니다.
+alert( arr.concat([3, 4], [5, 6]) ); // 1,2,3,4,5,6
+
+// arr의 요소 모두와 [3,4]의 요소 모두, 5와 6을 한데 모은 새로운 배열이 만들어집니다.
+alert( arr.concat([3, 4], 5, 6) ); // 1,2,3,4,5,6
+```
+
+`concat` 메서드는 제공받은 배열의 요소를 복사해 활용합니다. 객체가 인자로 넘어오면 (배열처럼 보이는 유사 배열 객체이더라도) 객체는 분해되지 않고 통으로 복사되어 더해집니다.
+
+```jsx
+let arr = [1, 2];
+
+let arrayLike = {
+  0: "something",
+  length: 1
+};
+
+alert( arr.concat(arrayLike) ); // 1,2,[object Object]
+```
+
+그런데 인자로 받은 유사 배열 객체에 특수한 프로퍼티 `Symbol.isConcatSpreadable`이 있으면 `concat`은 이 객체를 배열처럼 취급합니다. 따라서 객체 전체가 아닌 객체 프로퍼티의 값이 더해집니다.
+
+```jsx
+let arr = [1, 2];
+
+let arrayLike = {
+  0: "something",
+  1: "else",
+  *[Symbol.isConcatSpreadable]: true,*
+  length: 2
+};
+
+alert( arr.concat(arrayLike) ); // 1,2,something,else
+```
+
+## forEach로 반복작업 하기
+
+[arr.forEach](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)는 주어진 함수를 배열 요소 각각에 대해 실행할 수 있게 해줍니다.
+
+문법:
+
+```jsx
+arr.forEach(function(item, index, array) {
+  // 요소에 무언가를 할 수 있습니다.
+});
+```
+
+아래는 요소 모두를 얼럿창을 통해 출력해주는 코드입니다.
+
+```jsx
+// for each element call alert
+["Bilbo", "Gandalf", "Nazgul"].forEach(alert);
+```
+
+아래는 인덱스 정보까지 더해서 출력해주는 좀 더 정교한 코드입니다.
+
+```jsx
+["Bilbo", "Gandalf", "Nazgul"].forEach((item, index, array) => {
+  alert(`${item} is at index ${index} in ${array}`);
+});
+```
+
+참고로, 인수로 넘겨준 함수의 반환값은 무시됩니다.
+
+## 배열 탐색하기
+
+배열 내에서 무언가를 찾고 싶을 때 쓰는 메서드에 대해 알아봅시다.
+
+### indexOf, lastIndexOf와 includes
+
+[arr.indexOf](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)와 [arr.lastIndexOf](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/lastIndexOf), [arr.includes](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)는 같은 이름을 가진 문자열 메서드와 문법이 동일합니다. 물론 하는 일도 같습니다. 연산 대상이 문자열이 아닌 배열의 요소라는 점만 다릅니다.
+
+- `arr.indexOf(item, from)`는 인덱스 `from`부터 시작해 `item(요소)`을 찾습니다. 요소를 발견하면 해당 요소의 인덱스를 반환하고, 발견하지 못했으면 `1`을 반환합니다.
+- `arr.lastIndexOf(item, from)`는 위 메서드와 동일한 기능을 하는데, 검색을 끝에서부터 시작한다는 점만 다릅니다.
+- `arr.includes(item, from)`는 인덱스 `from`부터 시작해 `item`이 있는지를 검색하는데, 해당하는 요소를 발견하면 `true`를 반환합니다.
+
+```jsx
+let arr = [1, 0, false];
+
+alert( arr.indexOf(0) ); // 1
+alert( arr.indexOf(false) ); // 2
+alert( arr.indexOf(null) ); // -1
+
+alert( arr.includes(1) ); // true
+```
+
+위 메서드들은 요소를 찾을 때 완전 항등 연산자 `===` 을 사용한다는 점에 유의하시기 바랍니다. 보시는 바와 같이 `false`를 검색하면 정확히 `false`만을 검색하지, 0을 검색하진 않습니다.
+
+요소의 위치를 정확히 알고 싶은게 아니고 요소가 배열 내 존재하는지 여부만 확인하고 싶다면 `arr.includes`를 사용하는 게 좋습니다.
+
+`includes`는 `NaN`도 제대로 처리한다는 점에서 `indexOf/lastIndexOf`와 약간의 차이가 있습니다.
+
+```jsx
+const arr = [NaN];
+alert( arr.indexOf(NaN) ); // -1 (완전 항등 비교 === 는 NaN엔 동작하지 않으므로 0이 출력되지 않습니다.)
+alert( arr.includes(NaN) );// true (NaN의 여부를 확인하였습니다.)
+```
+
+### find와 findIndex
+
+객체로 이루어진 배열이 있다고 가정해 봅시다. 특정 조건에 부합하는 객체를 배열 내에서 어떻게 찾을 수 있을까요?
+
+이럴 때 [arr.find(fn)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/find)을 사용할 수 있습니다.
+
+문법:
+
+```jsx
+let result = arr.find(function(item, index, array) {
+  // true가 반환되면 반복이 멈추고 해당 요소를 반환합니다.
+  // 조건에 해당하는 요소가 없으면 undefined를 반환합니다.
+});
+```
+
+요소 전체를 대상으로 함수가 순차적으로 호출됩니다.
+
+- `item` – 함수를 호출할 요소
+- `index` – 요소의 인덱스
+- `array` – 배열 자기 자신
+
+함수가 참을 반환하면 탐색은 중단되고 해당 `요소`가 반환됩니다. 원하는 요소를 찾지 못했으면 `undefined`가 반환됩니다.
+
+`id`와 `name` 프로퍼티를 가진 사용자 객체로 구성된 배열을 예로 들어보겠습니다. 배열 내에서 `id == 1` 조건을 충족하는 사용자 객체를 찾아봅시다.
+
+```jsx
+let users = [
+  {id: 1, name: "John"},
+  {id: 2, name: "Pete"},
+  {id: 3, name: "Mary"}
+];
+
+let user = users.find(item => item.id == 1);
+
+alert(user.name); // John
+```
+
+실무에서 객체로 구성된 배열을 다뤄야 할 일이 잦기 때문에 `find` 메서드 활용법을 알아두면 좋습니다.
+
+그런데 위 예시에서 `find` 안의 함수가 인자를 하나만 가지고 있다는 점에 주목해주시기 바랍니다(`item => item.id == 1`). 이런 패턴이 가장 많이 사용되는 편입니다. 다른 인자들(`index`, `array`)은 잘 사용되지 않습니다.
+
+[arr.findIndex](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex)는 `find`와 동일한 일을 하나, 조건에 맞는 요소를 반환하는 대신 해당 요소의 인덱스를 반환한다는 점이 다릅니다. 조건에 맞는 요소가 없으면 `-1`이 반환됩니다.
+
+### filter
+
+`find` 메서드는 함수의 반환 값을 `true`로 만드는 단 하나의 요소를 찾습니다.
+
+조건을 충족하는 요소가 여러 개라면 [arr.filter(fn)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)를 사용하면 됩니다.
+
+`filter`는 `find`와 문법이 유사하지만, 조건에 맞는 요소 전체를 담은 배열을 반환한다는 점에서 차이가 있습니다.
+
+```jsx
+let results = arr.filter(function(item, index, array) {
+  // 조건을 충족하는 요소는 results에 순차적으로 더해집니다.
+  // 조건을 충족하는 요소가 하나도 없으면 빈 배열이 반환됩니다.
+});
+```
+
+```jsx
+let users = [
+  {id: 1, name: "John"},
+  {id: 2, name: "Pete"},
+  {id: 3, name: "Mary"}
+];
+
+// 앞쪽 사용자 두 명을 반환합니다.
+let someUsers = users.filter(item => item.id < 3);
+
+alert(someUsers.length); // 2
+```
+
+## 배열을 변형하는 메서드
+
+배열을 변형시키거나 요소를 재 정렬해주는 메서드에 대해 알아봅시다.
+
+### map
+
+[arr.map](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/map)은 유용성과 사용 빈도가 아주 높은 메서드 중 하나입니다.
+
+`map`은 배열 요소 전체를 대상으로 함수를 호출하고, 함수 호출 결과를 배열로 반환해줍니다.
+
+문법:
+
+```jsx
+let result = arr.map(function(item, index, array) {
+  // 요소 대신 새로운 값을 반환합니다.
+});
+```
+
+아래 예시에선 각 요소(문자열)의 길이를 출력해줍니다.
+
+```jsx
+let lengths = ["Bilbo", "Gandalf", "Nazgul"].map(item => item.length);
+alert(lengths); // 5,7,6
+```
+
+### sort(fn)
+
+[arr.sort()](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)는 배열의 요소를 정렬해줍니다. 배열 *자체*가 변경됩니다.
+
+메서드를 호출하면 재정렬 된 배열이 반환되는데, 이미 `arr` 자체가 수정되었기 때문에 반환 값은 잘 사용되지 않는 편입니다.
+
+```jsx
+let arr = [ 1, 2, 15 ];
+
+// arr 내부가 재 정렬됩니다.
+arr.sort();
+
+alert( arr );  // *1, 15, 2*
+```
+
+엇! 뭔가 이상하네요.
+
+재정렬 후 배열 요소가 `1, 15, 2`가 되었습니다. 기대하던 결과(`1, 2, 15`)와는 다르네요. 왜 이런 결과가 나왔을까요?
+
+**요소는 문자열로 취급되어 재 정렬되기 때문입니다.**
+
+모든 요소는 문자형으로 변환된 이후에 재 정렬됩니다. 앞서 배웠듯이 문자열 비교는 사전편집 순으로 진행되기 때문에 2는 15보다 큰 값으로 취급됩니다(`"2" > "15"`).
+
+기본 정렬 기준 대신 새로운 정렬 기준을 만들려면 `arr.sort()`에 새로운 함수를 넘겨줘야 합니다.
+
+인수로 넘겨주는 함수는 반드시 값 두 개를 비교해야 하고 반환 값도 있어야 합니다.
+
+```jsx
+function compare(a, b) {
+  if (a > b) return 1; // 첫 번째 값이 두 번째 값보다 큰 경우
+  if (a == b) return 0; // 두 값이 같은 경우
+  if (a < b) return -1; //  첫 번째 값이 두 번째 값보다 작은 경우
+}
+```
+
+이제 배열 요소를 숫자 오름차순 기준으로 정렬해봅시다.
+
+```jsx
+function compareNumeric(a, b) {
+  if (a > b) return 1;
+  if (a == b) return 0;
+  if (a < b) return -1;
+}
+
+let arr = [ 1, 2, 15 ];
+
+*arr.sort(compareNumeric);*alert(arr);  // *1, 2, 15*
+```
+
+이제 기대했던 대로 요소가 정렬되었습니다.
+
+여기서 잠시 멈춰 위 예시에서 어떤 일이 일어났는지 생각해 봅시다. 사실 `arr`엔 숫자, 문자열, 객체 등이 들어갈 수 있습니다. 알 수 없는 *무언가*로 구성된 집합이 되는 거죠. 이제 이 비 동질적인 집합을 정렬해야 한다고 가정해봅시다. 무언가를 정렬하려면 기준이 필요하겠죠? 이때 *정렬 기준을 정의해주는 함수(ordering function, 정렬 함수)* 가 필요합니다. `sort`에 정렬 함수를 인수로 넘겨주지 않으면 이 메서드는 사전편집 순으로 요소를 정렬합니다.
+
+`arr.sort(fn)`는 포괄적인 정렬 알고리즘을 이용해 구현되어있습니다. 대개 최적화된 [퀵 소트(quicksort)](https://en.wikipedia.org/wiki/Quicksort)를 사용하는데, `arr.sort(fn)`는 주어진 함수를 사용해 정렬 기준을 만들고 이 기준에 따라 요소들을 재배열하므로 개발자는 내부 정렬 동작 원리를 알 필요가 없습니다. 우리가 해야 할 일은 정렬 함수 `fn`을 만들고 이를 인수로 넘겨주는 것뿐입니다.
+
+정렬 과정에서 어떤 요소끼리 비교가 일어났는지 확인하고 싶다면 아래 코드를 활용하시면 됩니다.
+
+```jsx
+[1, -2, 15, 2, 0, 8].sort(function(a, b) {
+  alert( a + " <> " + b );
+  return a - b;
+});
+```
+
+정렬 중에 한 요소가 특정 요소와 여러 번 비교되는 일이 생기곤 하는데 비교 횟수를 최소화 하려다 보면 이런 일이 발생할 수 있습니다.
+
+**정렬 함수는 어떤 숫자든 반환할 수 있습니다.**
+
+### reverse
+
+[arr.reverse](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse)는 `arr`의 요소를 역순으로 정렬시켜주는 메서드입니다.
+
+```jsx
+let arr = [1, 2, 3, 4, 5];
+arr.reverse();
+
+alert( arr ); // 5,4,3,2,1
+```
+
+반환 값은 재 정렬된 배열입니다.
+
+### split과 join
+
+메시지 전송 애플리케이션을 만들고 있다고 가정해 봅시다. 수신자가 여러 명일 경우, 발신자는 쉼표로 각 수신자를 구분할 겁니다. `John, Pete, Mary`같이 말이죠. 개발자는 긴 문자열 형태의 수신자 리스트를 배열 형태로 전환해 처리하고 싶을 겁니다. 입력받은 문자열을 어떻게 배열로 바꿀 수 있을까요?
+
+[str.split(delim)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/split)을 이용하면 우리가 원하는 것을 정확히 할 수 있습니다. 이 메서드는 구분자(delimiter) `delim`을 기준으로 문자열을 쪼개줍니다.
+
+아래 예시에선 쉼표와 공백을 합친 문자열이 구분자로 사용되고 있습니다.
+
+```jsx
+let names = 'Bilbo, Gandalf, Nazgul';
+
+let arr = names.split(', ');
+
+for (let name of arr) {
+  alert( `${name}에게 보내는 메시지` ); // Bilbo에게 보내는 메시지
+}
+```
+
+`split` 메서드는 두 번째 인수로 숫자를 받을 수 있습니다. 이 숫자는 배열의 길이를 제한해주므로 길이를 넘어서는 요소를 무시할 수 있습니다. 실무에서 자주 사용하는 기능은 아닙니다.
+
+```jsx
+let arr = 'Bilbo, Gandalf, Nazgul, Saruman'.split(', ', 2);
+
+alert(arr); // Bilbo, Gandalf
+```
+
+[arr.join(glue)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/join)은 `split`과 반대 역할을 하는 메서드입니다. 인수 `glue`를 접착제처럼 사용해 배열 요소를 모두 합친 후 하나의 문자열을 만들어줍니다.
+
+```jsx
+let arr = ['Bilbo', 'Gandalf', 'Nazgul'];
+
+let str = arr.join(';'); // 배열 요소 모두를 ;를 사용해 하나의 문자열로 합칩니다.
+
+alert( str ); // Bilbo;Gandalf;Nazgul
+```
+
+### reduce와 reduceRight
+
+`forEach`, `for`, `for..of`를 사용하면 배열 내 요소를 대상으로 반복 작업을 할 수 있습니다.
+
+각 요소를 돌면서 반복 작업을 수행하고, 작업 결과물을 새로운 배열 형태로 얻으려면 `map`을 사용하면 되죠.
+
+[arr.reduce](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce)와 [arr.reduceRight](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight)도 이런 메서드들과 유사한 작업을 해줍니다. 그런데 사용법이 조금 복잡합니다. `reduce`와 `reduceRight`는 배열을 기반으로 값 하나를 도출할 때 사용됩니다.
+
+문법:
+
+```jsx
+let value = arr.reduce(function(accumulator, item, index, array) {
+  // ...
+}, [initial]);
+```
+
+인수로 넘겨주는 함수는 배열의 모든 요소를 대상으로 차례차례 적용되는데, 적용 결과는 다음 함수 호출 시 사용됩니다.
+
+함수의 인수는 다음과 같습니다.
+
+- `accumulator` – 이전 함수 호출의 결과. `initial`은 함수 최초 호출 시 사용되는 초깃값을 나타냄(옵션)
+- `item` – 현재 배열 요소
+- `index` – 요소의 위치
+- `array` – 배열
+
+이전 함수 호출 결과는 다음 함수를 호출할 때 첫 번째 인수(`previousValue`)로 사용됩니다.
+
+첫 번째 인수는 앞서 호출했던 함수들의 결과가 누적되어 저장되는 '누산기(accumulator)'라고 생각하면 됩니다. 마지막 함수까지 호출되면 이 값은 `reduce`의 반환 값이 됩니다.
+
+복잡해 보이긴 하지만 예제를 통해 메서드를 이해해 봅시다.
+
+`reduce`를 이용해 코드 한 줄로 배열의 모든 요소를 더한 값을 구해보겠습니다.
+
+```jsx
+let arr = [1, 2, 3, 4, 5];
+
+let result = arr.reduce((sum, current) => sum + current, 0);
+
+alert(result); // 15
+```
+
+`reduce`에 전달한 함수는 오직 인수 두 개만 받고 있습니다. 대개 이렇게 인수를 두 개만 받습니다.
+
+이제 어떤 과정을 거쳐 위와 같은 결과가 나왔는지 자세히 살펴보겠습니다.
+
+1. 함수 최초 호출 시, `reduce`의 마지막 인수인 `0(초깃값)`이 `sum`에 할당됩니다. `current`엔 배열의 첫 번째 요소인 `1`이 할당됩니다. 따라서 함수의 결과는 `1`이 됩니다.
+2. 두 번째 호출 시, `sum = 1` 이고 여기에 배열의 두 번째 요소(`2`)가 더해지므로 결과는 `3`이 됩니다.
+3. 세 번째 호출 시, `sum = 3` 이고 여기에 배열의 다음 요소가 더해집니다. 이런 과정이 계속 이어집니다.
+
+이제 이전 호출의 결과가 어떻게 다음 호출의 첫 번째 인수로 전달되는지 아셨죠?
+
+한편, 아래와 같이 초깃값을 생략하는 것도 가능합니다.
+
+```jsx
+let arr = [1, 2, 3, 4, 5];
+
+// reduce에서 초깃값을 제거함(0이 없음)
+let result = arr.reduce((sum, current) => sum + current);
+
+alert( result ); // 15
+```
+
+초깃값을 없애도 결과는 동일하네요. 초깃값이 없으면 `reduce`는 배열의 첫 번째 요소를 초깃값으로 사용하고 두 번째 요소부터 함수를 호출하기 때문입니다.
+
+위 표에서 첫 번째 호출에 관련된 줄만 없애면 초깃값 없이 계산한 위 예제의 계산 흐름이 됩니다.
+
+하지만 이렇게 초깃값 없이 `reduce`를 사용할 땐 극도의 주의를 기울여야 합니다. 배열이 비어있는 상태면 `reduce` 호출 시 에러가 발생하기 때문입니다.
+
+```jsx
+let arr = [];
+
+// TypeError: Reduce of empty array with no initial value
+// 초깃값을 설정해 주었다면 초깃값이 반환되었을 겁니다.
+arr.reduce((sum, current) => sum + current);
+```
+
+이런 예외상황 때문에 항상 초깃값을 명시해 줄 것을 권장합니다.
+
+[arr.reduceRight](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight)는 `reduce`와 동일한 기능을 하지만 배열의 오른쪽부터 연산을 수행한다는 점이 다른 메서드입니
+
+## Array.isArray로 배열 여부 알아내기
+
+자바스크립트에서 배열은 독립된 자료형으로 취급되지 않고 객체형에 속합니다.
+
+따라서 `typeof`로는 일반 객체와 배열을 구분할 수가 없죠.
+
+```jsx
+alert(typeof {}); // object
+alert(typeof []); // object
+```
+
+그런데 배열은 자주 사용되는 자료구조이기 때문에 배열인지 아닌지를 감별해내는 특별한 메서드가 있다면 아주 유용할 겁니다. [Array.isArray(value)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray)는 이럴 때 사용할 수 있는 유용한 메서드입니다. `value`가 배열이라면 `true`를, 배열이 아니라면 `false`를 반환해주죠.
+
+```jsx
+alert(Array.isArray({})); // false
+
+alert(Array.isArray([])); // true
+```
+
+## 배열 메서드와 ‘thisArg’
+
+함수를 호출하는 대부분의 배열 메서드(`find`, `filter`, `map` 등. `sort`는 제외)는 `thisArg`라는 매개변수를 옵션으로 받을 수 있습니다.
+
+자주 사용되는 인수가 아니어서 지금까진 이 매개변수에 대해 언급하지 않았는데, 튜토리얼의 완성도를 위해 `thisArg`에 대해 잠시 언급하고 넘어가도록 하겠습니다.
+
+`thisArg`는 아래와 같이 활용할 수 있습니다.
+
+```jsx
+arr.find(func, thisArg);
+arr.filter(func, thisArg);
+arr.map(func, thisArg);
+// ...
+// thisArg는 선택적으로 사용할 수 있는 마지막 인수입니다.
+```
+
+`thisArg`는 `func`의 `this`가 됩니다.
+
+아래 예시에서 객체 `army`의 메서드를 `filter`의 인자로 넘겨주고 있는데, 이때 `thisArg`는 `canJoin`의 컨텍스트 정보를 넘겨줍니다.
+
+```jsx
+let army = {
+  minAge: 18,
+  maxAge: 27,
+  canJoin(user) {
+    return user.age >= this.minAge && user.age < this.maxAge;
+  }
+};
+
+let users = [
+  {age: 16},
+  {age: 20},
+  {age: 23},
+  {age: 30}
+];
+
+*// army.canJoin 호출 시 참을 반환해주는 user를 찾음
+let soldiers = users.filter(army.canJoin, army);*
+
+alert(soldiers.length); // 2
+alert(soldiers[0].age); // 20
+alert(soldiers[1].age); // 23
+```
+
+`thisArgs`에 `army`를 지정하지 않고 단순히 `users.filter(army.canJoin)`를 사용했다면 `army.canJoin`은 단독 함수처럼 취급되고, 함수 본문 내 `this`는 `undefined`가 되어 에러가 발생했을 겁니다.
+
+`users.filter(user => army.canJoin(user))`를 사용하면 `users.filter(army.canJoin, army)`를 대체할 수 있긴 한데 `thisArg`를 사용하는 방식이 좀 더 이해하기 쉬우므로 더 자주 사용됩니다.
+
+## 요약
+
+지금까지 살펴본 배열 메서드를 요약해보도록 합시다.
+
+- 요소를 더하거나 지우기
+    - `push(...items)` – 맨 끝에 요소 추가하기
+    - `pop()` – 맨 끝 요소 추출하기
+    - `shift()` – 첫 요소 추출하기
+    - `unshift(...items)` – 맨 앞에 요소 추가하기
+    - `splice(pos, deleteCount, ...items)` – `pos`부터 `deleteCount`개의 요소를 지우고, `items` 추가하기
+    - `slice(start, end)` – `start`부터 `end` 바로 앞까지의 요소를 복사해 새로운 배열을 만듦
+    - `concat(...items)` – 배열의 모든 요소를 복사하고 `items`를 추가해 새로운 배열을 만든 후 이를 반환함. `items`가 배열이면 이 배열의 인수를 기존 배열에 더해줌
+- 원하는 요소 찾기
+    - `indexOf/lastIndexOf(item, pos)` – `pos`부터 원하는 `item`을 찾음. 찾게 되면 해당 요소의 인덱스를, 아니면 `1`을 반환함
+    - `includes(value)` – 배열에 `value`가 있으면 `true`를, 그렇지 않으면 `false`를 반환함
+    - `find/filter(func)` – `func`의 반환 값을 `true`로 만드는 첫 번째/전체 요소를 반환함
+    - `findIndex`는 `find`와 유사함. 다만 요소 대신 인덱스를 반환함
+- 배열 전체 순회하기
+    - `forEach(func)` – 모든 요소에 `func`을 호출함. 결과는 반환되지 않음
+- 배열 변형하기
+    - `map(func)` – 모든 요소에 `func`을 호출하고, 반환된 결과를 가지고 새로운 배열을 만듦
+    - `sort(func)` – 배열을 정렬하고 정렬된 배열을 반환함
+    - `reverse()` – 배열을 뒤집어 반환함
+    - `split/join` – 문자열을 배열로, 배열을 문자열로 변환함
+    - `reduce(func, initial)` – 요소를 차례로 돌면서 `func`을 호출함. 반환값은 다음 함수 호출에 전달함. 최종적으로 하나의 값이 도출됨
+- 기타
+    - `Array.isArray(arr)` – `arr`이 배열인지 여부를 판단함
+
+`sort`, `reverse`, `splice`는 기존 배열을 변형시킨다는 점에 주의하시기 바랍니다.
+
+지금까지 배운 메서드만으로 배열과 관련된 작업 99%를 해결할 수 있습니다. 이 외의 배열 메서드도 있긴 한데 잠시 언급하고 넘어가겠습니다.
+
+- [arr.some(fn)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/some)과 [arr.every(fn)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/every)는 배열을 확인합니다.
+
+    두 메서드는 `map`과 유사하게 모든 요소를 대상으로 함수를 호출합니다. `some`은 함수의 반환 값을 `true`로 만드는 요소가 하나라도 있는지 여부를 확인하고 `every`는 모든 요소가 함수의 반환 값을 `true`로 만드는지 여부를 확인합니다. 두 메서드 모두 조건을 충족하면 `true`를, 그렇지 않으면 `false`를 반환합니다.
+
+- [arr.fill(value, start, end)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/fill)은 `start`부터 `end`까지 `value`를 채워 넣습니다.
+- [arr.copyWithin(target, start, end)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/copyWithin)은 `start`부터 `end`까지 요소를 복사하고, 복사한 요소를 `target`에 붙여넣습니다. 기존 요소가 있다면 덮어씁니다.
+
+배열에 관한 모든 메서드는 [manual](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array)에서 찾아볼 수 있습니다.
+
+배워야 할 메서드 종류가 너무 많아서 이걸 다 외워야 하나라는 생각이 들 수 있는데, 생각보다 쉬우니 너무 걱정하지 않으셨으면 좋겠습니다.
+
+일단은 요약본을 참고해 자주 사용하는 메서드가 무엇인지 정도만 알아두어도 괜찮습니다. 아래 과제를 풀면서 충분히 연습하다 보면 배열 메서드에 대한 경험치가 쌓일 겁니다.
+
+나중에 배열을 이용해 뭔가를 해야 하는데 방법이 떠오르지 않을 때 이곳으로 돌아와 요약본을 다시 보고 상황에 맞는 메서드를 찾으면 됩니다. 설명에 딸린 예시들이 실제 코드 작성 시 도움이 될 겁니다. 이런 과정을 반복하다 보면 특별한 노력 없이도 메서드를 저절로 외울 수 있습니다.
+
+## 5.6 iterable 객체
+
+*반복 가능한(iterable, 이터러블)* 객체는 배열을 일반화한 객체입니다. 이터러블 이라는 개념을 사용하면 어떤 객체에든 `for..of` 반복문을 적용할 수 있습니다.
+
+배열은 대표적인 이터러블입니다. 배열 외에도 다수의 내장 객체가 반복 가능합니다. 문자열 역시 이터러블의 예입니다.
+
+배열이 아닌 객체가 있는데, 이 객체가 어떤 것들의 컬렉션(목록, 집합 등)을 나타내고 있는 경우, `for..of` 문법을 적용할 수만 있다면 컬렉션을 순회하는데 유용할 겁니다. 이게 가능하도록 해봅시다.
+
+## Symbol.iterator
+
+직접 이터러블 객체를 만들어 이터러블이라는 개념을 이해해 보도록 합시다.
+
+`for..of`를 적용하기에 적합해 보이는 배열이 아닌 객체를 만들겠습니다.
+
+예시의 객체 `range`는 숫자 간격을 나타내고 있습니다.
+
+```jsx
+let range = {
+  from: 1,
+  to: 5
+};
+
+// 아래와 같이 for..of가 동작할 수 있도록 하는 게 목표입니다.
+// for(let num of range) ... num=1,2,3,4,5
+```
+
+`range`를 이터러블로 만들려면(`for..of`가 동작하도록 하려면) 객체에 `Symbol.iterator`(특수 내장 심볼)라는 메서드를 추가해 아래와 같은 일이 벌어지도록 해야 합니다.
+
+1. `for..of`가 시작되자마자 `for..of`는 `Symbol.iterator`를 호출합니다(`Symbol.iterator`가 없으면 에러가 발생합니다). `Symbol.iterator`는 반드시 *이터레이터(iterator, 메서드 `next`가 있는 객체)* 를 반환해야 합니다.
+1. 이후 `for..of`는 *반환된 객체(이터레이터)만*을 대상으로 동작합니다.
+2. `for..of`에 다음 값이 필요하면, `for..of`는 이터레이터의 `next()`메서드를 호출합니다.
+3. `next()`의 반환 값은 `{done: Boolean, value: any}`와 같은 형태이어야 합니다. `done=true`는 반복이 종료되었음을 의미합니다. `done=false`일땐 `value`에 다음 값이 저장됩니다.
+
+`range`를 반복 가능한 객체로 만들어주는 코드는 다음과 같습니다.
+
+```jsx
+let range = {
+  from: 1,
+  to: 5
+};
+
+// 1. for..of 최초 호출 시, Symbol.iterator가 호출됩니다.
+range[Symbol.iterator] = function() {
+
+  // Symbol.iterator는 이터레이터 객체를 반환합니다.
+  // 2. 이후 for..of는 반환된 이터레이터 객체만을 대상으로 동작하는데, 이때 다음 값도 정해집니다.
+  return {
+    current: this.from,
+    last: this.to,
+
+    // 3. for..of 반복문에 의해 반복마다 next()가 호출됩니다.
+    next() {
+      // 4. next()는 값을 객체 {done:.., value :...}형태로 반환해야 합니다.
+      if (this.current <= this.last) {
+        return { done: false, value: this.current++ };
+      } else {
+        return { done: true };
+      }
+    }
+  };
+};
+
+// 이제 의도한 대로 동작합니다!
+for (let num of range) {
+  alert(num); // 1, then 2, 3, 4, 5
+}
+```
+
+이터러블 객체의 핵심은 '관심사의 분리(Separation of concern, SoC)'에 있습니다.
+
+- `range`엔 메서드 `next()`가 없습니다.
+- 대신 `range[Symbol.iterator]()`를 호출해서 만든 ‘이터레이터’ 객체와 이 객체의 메서드 `next()`에서 반복에 사용될 값을 만들어냅니다.
+
+이렇게 하면 이터레이터 객체와 반복 대상인 객체를 분리할 수 있습니다.
+
+이터레이터 객체와 반복 대상 객체를 합쳐서 `range` 자체를 이터레이터로 만들면 코드가 더 간단해집니다.
+
+다음처럼 말이죠.
+
+```jsx
+let range = {
+  from: 1,
+  to: 5,
+
+  [Symbol.iterator]() {
+    this.current = this.from;
+    return this;
+  },
+
+  next() {
+    if (this.current <= this.to) {
+      return { done: false, value: this.current++ };
+    } else {
+      return { done: true };
+    }
+  }
+};
+
+for (let num of range) {
+  alert(num); // 1, then 2, 3, 4, 5
+}
+```
+
+이제 `range[Symbol.iterator]()`가 객체 `range` 자체를 반환합니다. 반환된 객체엔 필수 메서드인 `next()`가 있고 `this.current`에 반복이 얼마나 진행되었는지를 나타내는 값도 저장되어 있습니다. 코드는 더 짧아졌고요. 이렇게 작성하는 게 좋을 때가 종종 있습니다.
+
+단점은 두 개의 `for..of` 반복문을 하나의 객체에 동시에 사용할 수 없다는 점입니다. 이터레이터(객체 자신)가 하나뿐이어서 두 반복문이 반복 상태를 공유하기 때문이죠. 그런데 동시에 두 개의 `for..of`를 사용하는 것은 비동기 처리에서도 흔한 케이스는 아닙니다.
+
+## 문자열은 이터러블입니다
+
+배열과 문자열은 가장 광범위하게 쓰이는 내장 이터러블입니다.
+
+`for..of`는 문자열의 각 글자를 순회합니다.
+
+```jsx
+for (let char of "test") {
+  // 글자 하나당 한 번 실행됩니다(4회 호출).
+  alert( char ); // t, e, s, t가 차례대로 출력됨
+}
+```
+
+서로게이트 쌍(surrogate pair)에도 잘 동작합니다.
+
+```jsx
+let str = '𝒳😂';
+for (let char of str) {
+    alert( char ); // 𝒳와 😂가 차례대로 출력됨
+}
+```
+
+## 이터레이터를 명시적으로 호출하기
+
+이터레이터를 어떻게 명시적으로 사용할 수 있는지 살펴보면서 좀 더 깊게 이해해봅시다.
+
+`for..of`를 사용했을 때와 동일한 방법으로 문자열을 순회할 건데, 이번엔 직접 호출을 통해서 순회해보겠습니다. 다음 코드는 문자열 이터레이터를 만들고, 여기서 값을 ‘수동으로’ 가져옵니다.
+
+```jsx
+let str = "Hello";
+
+// for..of를 사용한 것과 동일한 작업을 합니다.
+// for (let char of str) alert(char);
+
+*let iterator = str[Symbol.iterator]();*
+
+while (true) {
+  let result = iterator.next();
+  if (result.done) break;
+  alert(result.value); // 글자가 하나씩 출력됩니다.
+}
+```
+
+이터레이터를 명시적으로 호출하는 경우는 거의 없는데, 이 방법을 사용하면 `for..of`를 사용하는 것보다 반복 과정을 더 잘 통제할 수 있다는 장점이 있습니다. 반복을 시작했다가 잠시 멈춰 다른 작업을 하다가 다시 반복을 시작하는 것과 같이 반복 과정을 여러 개로 쪼개는 것이 가능합니다.
+
+## 이터러블과 유사 배열
+
+비슷해 보이지만 아주 다른 용어 두 가지가 있습니다. 헷갈리지 않으려면 두 용어를 잘 이해하고 있어야 합니다.
+
+- *이터러블(iterable)* 은 위에서 설명한 바와 같이 메서드 `Symbol.iterator`가 구현된 객체입니다.
+- *유사 배열(array-like)* 은 인덱스와 `length` 프로퍼티가 있어서 배열처럼 보이는 객체입니다.
+
+브라우저나 등의 호스트 환경에서 자바스크립트를 사용해 문제를 해결할 때 이터러블 객체나 유사 배열 객체 혹은 둘 다인 객체를 만날 수 있습니다.
+
+이터러블 객체(`for..of` 를 사용할 수 있음)이면서 유사배열 객체(숫자 인덱스와 `length` 프로퍼티가 있음)인 문자열이 대표적인 예입니다.
+
+이터러블 객체라고 해서 유사 배열 객체는 아닙니다. 유사 배열 객체라고 해서 이터러블 객체인 것도 아닙니다.
+
+위 예시의 `range`는 이터러블 객체이긴 하지만 인덱스도 없고 `length` 프로퍼티도 없으므로 유사 배열 객체가 아닙니다.
+
+아래 예시의 객체는 유사 배열 객체이긴 하지만 이터러블 객체가 아닙니다.
+
+```jsx
+let arrayLike = { // 인덱스와 length프로퍼티가 있음 => 유사 배열
+  0: "Hello",
+  1: "World",
+  length: 2
+};
+
+*// Symbol.iterator가 없으므로 에러 발생
+for (let item of arrayLike) {}*
+```
+
+이터러블과 유사 배열은 대개 *배열이 아니기 때문에* `push`, `pop` 등의 메서드를 지원하지 않습니다. 이터러블과 유사 배열을 배열처럼 다루고 싶을 때 이런 특징은 불편함을 초래합니다. `range`에 배열 메서드를 사용해 무언가를 하고 싶을 때처럼 말이죠. 어떻게 하면 이터러블과 유사 배열에 배열 메서드를 적용할 수 있을까요?
+
+## Array.from
+
+범용 메서드 [Array.from](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/from)는 이터러블이나 유사 배열을 받아 ‘진짜’ `Array`를 만들어줍니다. 이 과정을 거치면 이터러블이나 유사 배열에 배열 메서드를 사용할 수 있습니다.
+
+```jsx
+let arrayLike = {
+  0: "Hello",
+  1: "World",
+  length: 2
+};
+
+*let arr = Array.from(arrayLike); // (*)*
+alert(arr.pop()); // World (메서드가 제대로 동작합니다.)
+```
+
+`(*)`로 표시한 줄에 있는 `Array.from`은 객체를 받아 이터러블이나 유사 배열인지 조사합니다. 넘겨 받은 인수가 이터러블이나 유사 배열인 경우, 새로운 배열을 만들고 객체의 모든 요소를 새롭게 만든 배열로 복사합니다.
+
+이터러블을 사용한 예시는 다음과 같습니다.
+
+```jsx
+// range는 챕터 위쪽 예시에서 그대로 가져왔다고 가정합시다.
+let arr = Array.from(range);
+alert(arr); // 1,2,3,4,5 (배열-문자열 형 변환이 제대로 동작합니다.)
+```
+
+`Array.from`엔 ‘매핑(mapping)’ 함수를 선택적으로 넘겨줄 수 있습니다.
+
+```jsx
+Array.from(obj[, mapFn, thisArg])
+```
+
+`mapFn`을 두 번째 인수로 넘겨주면 새로운 배열에 `obj`의 요소를 추가하기 전에 각 요소를 대상으로 `mapFn`을 적용할 수 있습니다. 새로운 배열엔 `mapFn`을 적용하고 반환된 값이 추가됩니다. 세 번째 인수 `thisArg`는 각 요소의 `this`를 지정할 수 있도록 해줍니다.
+
+```jsx
+// range는 챕터 위쪽 예시에서 그대로 가져왔다고 가정합시다.
+
+// 각 숫자를 제곱
+let arr = Array.from(range, num => num * num);
+
+alert(arr); // 1,4,9,16,25
+```
+
+아래 예시에선 `Array.from`를 사용해 문자열을 배열로 만들어보았습니다.
+
+```jsx
+let str = '𝒳😂';
+
+// str를 분해해 글자가 담긴 배열로 만듦
+let chars = Array.from(str);
+
+alert(chars[0]); // 𝒳
+alert(chars[1]); // 😂
+alert(chars.length); // 2
+```
+
+`Array.from`은 `str.split`과 달리, 문자열 자체가 가진 이터러블 속성을 이용해 동작합니다. 따라서 `for..of`처럼 서로게이트 쌍에도 제대로 적용됩니다.
+
+위 예시는 기술적으로 아래 예시와 동일하게 동작한다고 보시면 됩니다.
+
+```jsx
+let str = '𝒳😂';
+
+let chars = []; // Array.from 내부에선 아래와 동일한 반복문이 돌아갑니다.
+for (let char of str) {
+  chars.push(char);
+}
+
+alert(chars);
+```
+
+어쨌든 `Array.from`을 사용한 예시가 더 짧습니다.
+
+`Array.from`을 사용하면 서로게이트 쌍을 처리할 수 있는 `slice`를 직접 구현할 수도 있습니다.
+
+```jsx
+function slice(str, start, end) {
+  return Array.from(str).slice(start, end).join('');
+}
+
+let str = '𝒳😂𩷶';
+
+alert( slice(str, 1, 3) ); // 😂𩷶
+
+// 내장 순수 메서드는 서로게이트 쌍을 지원하지 않습니다.
+alert( str.slice(1, 3) ); // 쓰레깃값 출력 (영역이 다른 특수 값)
+```
+
+## 요약
+
+`for..of`을 사용할 수 있는 객체를 *이터러블*이라고 부릅니다.
+
+- 이터러블엔 메서드 `Symbol.iterator`가 반드시 구현되어 있어야 합니다.
+    - `obj[Symbol.iterator]`의 결과는 *이터레이터*라고 부릅니다. 이터레이터는 이어지는 반복 과정을 처리합니다.
+    - 이터레이터엔 객체 `{done: Boolean, value: any}`을 반환하는 메서드 `next()`가 반드시 구현되어 있어야 합니다. 여기서 `done:true`은 반복이 끝났음을 의미하고 그렇지 않은 경우엔 `value`가 다음 값이 됩니니다.
+- 메서드 `Symbol.iterator`는 `for..of`에 의해 자동으로 호출되는데, 개발자가 명시적으로 호출하는 것도 가능합니다.
+- 문자열이나 배열 같은 내장 이터러블에도 `Symbol.iterator`가 구현되어 있습니다.
+- 문자열 이터레이터는 서로게이트 쌍을 지원합니다.
+
+인덱스와 `length` 프로퍼티가 있는 객체는 *유사 배열*이라 불립니다. 유사 배열 객체엔 다양한 프로퍼티와 메서드가 있을 수 있는데 배열 내장 메서드는 없습니다.
+
+명세서를 보면 대부분의 메서드는 ‘진짜’ 배열이 아닌 이터러블이나 유사 배열을 대상으로 동작한다고 쓰여 있는걸 볼 수 있습니다. 이 방법이 더 추상적이기 때문입니다.
+
+`Array.from(obj[, mapFn, thisArg])`을 사용하면 이터러블이나 유사 배열인 `obj`를 진짜 `Array`로 만들 수 있습니다. 이렇게 하면 `obj`에도 배열 메서드를 사용할 수 있죠. 선택 인수 `mapFn`와 `thisArg`는 각 요소에 함수를 적용할 수 있게 해줍니다.
+
+## 5.7 맵과 셋
+
+지금까진 아래와 같은 복잡한 자료구조를 학습해 보았습니다.
+
+- 객체 – 키가 있는 컬렉션을 저장함
+- 배열 – 순서가 있는 컬렉션을 저장함
+
+하지만 현실 세계를 반영하기엔 이 두 자료구조 만으론 부족해서 `맵(Map)`과 `셋(Set)`이 등장하게 되었습니다.
+
+## 맵
+
+[맵(Map)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Map)은 키가 있는 데이터를 저장한다는 점에서 `객체`와 유사합니다. 다만, `맵`은 키에 다양한 자료형을 허용한다는 점에서 차이가 있습니다.
+
+맵에는 다음과 같은 주요 메서드와 프로퍼티가 있습니다.
+
+- `new Map()` – 맵을 만듭니다.
+- `map.set(key, value)` – `key`를 이용해 `value`를 저장합니다.
+- `map.get(key)` – `key`에 해당하는 값을 반환합니다. `key`가 존재하지 않으면 `undefined`를 반환합니다.
+- `map.has(key)` – `key`가 존재하면 `true`, 존재하지 않으면 `false`를 반환합니다.
+- `map.delete(key)` – `key`에 해당하는 값을 삭제합니다.
+- `map.clear()` – 맵 안의 모든 요소를 제거합니다.
+- `map.size` – 요소의 개수를 반환합니다.
+
+```jsx
+let map = new Map();
+
+map.set('1', 'str1');   // 문자형 키
+map.set(1, 'num1');     // 숫자형 키
+map.set(true, 'bool1'); // 불린형 키
+
+// 객체는 키를 문자형으로 변환한다는 걸 기억하고 계신가요?
+// 맵은 키의 타입을 변환시키지 않고 그대로 유지합니다. 따라서 아래의 코드는 출력되는 값이 다릅니다.
+alert( map.get(1)   ); // 'num1'
+alert( map.get('1') ); // 'str1'
+
+alert( map.size ); // 3
+```
+
+맵은 객체와 달리 키를 문자형으로 변환하지 않습니다. 키엔 자료형 제약이 없습니다.
+
+**맵은 키로 객체를 허용합니다.**
+
+```jsx
+let john = { name: "John" };
+
+// 고객의 가게 방문 횟수를 세본다고 가정해 봅시다.
+let visitsCountMap = new Map();
+
+// john을 맵의 키로 사용하겠습니다.
+visitsCountMap.set(john, 123);
+
+alert( visitsCountMap.get(john) ); // 123
+```
+
+객체를 키로 사용할 수 있다는 점은 `맵`의 가장 중요한 기능 중 하나입니다. `객체`에는 문자열 키를 사용할 수 있습니다. 하지만 객체 키는 사용할 수 없습니다.
+
+객체형 키를 `객체`에 써봅시다.
+
+```jsx
+let john = { name: "John" };
+
+let visitsCountObj = {}; // 객체를 하나 만듭니다.
+
+visitsCountObj[john] = 123; // 객체(john)를 키로 해서 객체에 값(123)을 저장해봅시다.
+
+*// 원하는 값(123)을 얻으려면 아래와 같이 키가 들어갈 자리에 `object Object`를 써줘야합니다.
+alert( visitsCountObj["[object Object]"] ); // 123*
+```
+
+`visitsCountObj`는 객체이기 때문에 모든 키를 문자형으로 변환시킵니다. 이 과정에서 `john`은 문자형으로 변환되어 `"[object Object]"`가 됩니다.
+
+## 맵의 요소에 반복 작업하기
+
+다음 세 가지 메서드를 사용해 `맵`의 각 요소에 반복 작업을 할 수 있습니다.
+
+- `map.keys()` – 각 요소의 키를 모은 반복 가능한(iterable, 이터러블) 객체를 반환합니다.
+- `map.values()` – 각 요소의 값을 모은 이터러블 객체를 반환합니다.
+- `map.entries()` – 요소의 `[키, 값]`을 한 쌍으로 하는 이터러블 객체를 반환합니다. 이 이터러블 객체는 `for..of`반복문의 기초로 쓰입니다.
+
+```jsx
+let recipeMap = new Map([
+  ['cucumber', 500],
+  ['tomatoes', 350],
+  ['onion',    50]
+]);
+
+// 키(vegetable)를 대상으로 순회합니다.
+for (let vegetable of recipeMap.keys()) {
+  alert(vegetable); // cucumber, tomatoes, onion
+}
+
+// 값(amount)을 대상으로 순회합니다.
+for (let amount of recipeMap.values()) {
+  alert(amount); // 500, 350, 50
+}
+
+// [키, 값] 쌍을 대상으로 순회합니다.
+for (let entry of recipeMap) { // recipeMap.entries()와 동일합니다.
+  alert(entry); // cucumber,500 ...
+}
+```
+
+여기에 더하여 `맵`은 `배열`과 유사하게 내장 메서드 `forEach`도 지원합니다.
+
+```jsx
+// 각 (키, 값) 쌍을 대상으로 함수를 실행
+recipeMap.forEach( (value, key, map) => {
+  alert(`${key}: ${value}`); // cucumber: 500 ...
+});
+```
+
+## Object.entries: 객체를 맵으로 바꾸기
+
+각 요소가 키-값 쌍인 배열이나 이터러블 객체를 초기화 용도로 `맵`에 전달해 새로운 `맵`을 만들 수 있습니다.
+
+아래와 같이 말이죠.
+
+```jsx
+// 각 요소가 [키, 값] 쌍인 배열
+let map = new Map([
+  ['1',  'str1'],
+  [1,    'num1'],
+  [true, 'bool1']
+]);
+
+alert( map.get('1') ); // str1
+```
+
+평범한 객체를 가지고 `맵`을 만들고 싶다면 내장 메서드 [Object.entries(obj)](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Object/entries)를 활용해야 합니다. 이 메서드는 객체의 키-값 쌍을 요소(`[key, value]`)로 가지는 배열을 반환합니다.
+
+```jsx
+let obj = {
+  name: "John",
+  age: 30
+};
+
+*let map = new Map(Object.entries(obj));*
+
+alert( map.get('name') ); // John
+```
+
+`Object.entries`를 사용해 객체 `obj`를 배열 `[ ["name","John"], ["age", 30] ]`로 바꾸고, 이 배열을 이용해 새로운 `맵`을 만들어보았습니다.
+
+## Object.fromEntries: 맵을 객체로 바꾸기
+
+방금까진 `Object.entries(obj)`를 사용해 평범한 객체를 `맵`으로 바꾸는 방법에 대해 알아보았습니다.
+
+이젠 이 반대인 맵을 객체로 바꾸는 방법에 대해 알아보겠습니다. `Object.fromEntries`를 사용하면 가능합니다. 이 메서드는 각 요소가 `[키, 값]` 쌍인 배열을 객체로 바꿔줍니다.
+
+```jsx
+let prices = Object.fromEntries([
+  ['banana', 1],
+  ['orange', 2],
+  ['meat', 4]
+]);
+
+// now prices = { banana: 1, orange: 2, meat: 4 }
+
+alert(prices.orange); // 2
+```
+
+`Object.fromEntries`를 사용해 `맵`을 객체로 바꿔봅시다.
+
+자료가 `맵`에 저장되어있는데, 서드파티 코드에서 자료를 객체형태로 넘겨받길 원할 때 이 방법을 사용할 수 있습니다.
+
+```jsx
+let map = new Map();
+map.set('banana', 1);
+map.set('orange', 2);
+map.set('meat', 4);
+
+*let obj = Object.fromEntries(map.entries()); // 맵을 일반 객체로 변환 (*)*
+
+// 맵이 객체가 되었습니다!
+// obj = { banana: 1, orange: 2, meat: 4 }
+
+alert(obj.orange); // 2
+```
+
+`map.entries()`를 호출하면 맵의 `[키, 값]`을 요소로 가지는 이터러블을 반환합니다. `Object.fromEntries`를 사용하기 위해 딱 맞는 형태이죠.
+
+`(*)`로 표시한 줄을 좀 더 짧게 줄이는 것도 가능합니다.
+
+```jsx
+let obj = Object.fromEntries(map); // .entries()를 생략함
+```
+
+`Object.fromEntries`는 인수로 이터러블 객체를 받기 때문에 짧게 줄인 코드도 이전 코드와 동일하게 동작합니다. 꼭 배열을 전달해줄 필요는 없습니다. 그리고 `map`에서의 일반적인 반복은 `map.entries()`를 사용했을 때와 같은 키-값 쌍을 반환합니다. 따라서 `map`과 동일한 키-값을 가진 일반 객체를 얻게 됩니다.
+
+## 셋
+
+`셋(Set)`은 중복을 허용하지 않는 값을 모아놓은 특별한 컬렉션입니다. 셋에 키가 없는 값이 저장됩니다.
+
+주요 메서드는 다음과 같습니다.
+
+- `new Set(iterable)` – 셋을 만듭니다. `이터러블` 객체를 전달받으면(대개 배열을 전달받음) 그 안의 값을 복사해 셋에 넣어줍니다.
+- `set.add(value)` – 값을 추가하고 셋 자신을 반환합니다.
+- `set.delete(value)` – 값을 제거합니다. 호출 시점에 셋 내에 값이 있어서 제거에 성공하면 `true`, 아니면 `false`를 반환합니다.
+- `set.has(value)` – 셋 내에 값이 존재하면 `true`, 아니면 `false`를 반환합니다.
+- `set.clear()` – 셋을 비웁니다.
+- `set.size` – 셋에 몇 개의 값이 있는지 세줍니다.
+
+셋 내에 동일한 값(value)이 있다면 `set.add(value)`을 아무리 많이 호출하더라도 아무런 반응이 없을 겁니다. 셋 내의 값에 중복이 없는 이유가 바로 이 때문이죠.
+
+방문자 방명록을 만든다고 가정해 봅시다. 한 방문자가 여러 번 방문해도 방문자를 중복해서 기록하지 않겠다고 결정 내린 상황입니다. 즉, 한 방문자는 '단 한 번만 기록’되어야 합니다.
+
+이때 적합한 자료구조가 바로 `셋`입니다.
+
+```jsx
+let set = new Set();
+
+let john = { name: "John" };
+let pete = { name: "Pete" };
+let mary = { name: "Mary" };
+
+// 어떤 고객(john, mary)은 여러 번 방문할 수 있습니다.
+set.add(john);
+set.add(pete);
+set.add(mary);
+set.add(john);
+set.add(mary);
+
+// 셋에는 유일무이한 값만 저장됩니다.
+alert( set.size ); // 3
+
+for (let user of set) {
+  alert(user.name); // // John, Pete, Mary 순으로 출력됩니다.
+}
+```
+
+`셋` 대신 배열을 사용하여 방문자 정보를 저장한 후, 중복 값 여부는 배열 메서드인 [arr.find](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Array/find)를 이용해 확인할 수도 있습니다. 하지만 `arr.find`는 배열 내 요소 전체를 뒤져 중복 값을 찾기 때문에, 셋보다 성능 면에서 떨어집니다. 반면, `셋`은 값의 유일무이함을 확인하는데 최적화되어있습니다.
+
+## 셋의 값에 반복 작업하기
+
+`for..of`나 `forEach`를 사용하면 셋의 값을 대상으로 반복 작업을 수행할 수 있습니다.
+
+```jsx
+let set = new Set(["oranges", "apples", "bananas"]);
+
+for (let value of set) alert(value);
+
+// forEach를 사용해도 동일하게 동작합니다.
+set.forEach((value, valueAgain, set) => {
+  alert(value);
+});
+```
+
+흥미로운 점이 눈에 띄네요. `forEach`에 쓰인 콜백 함수는 세 개의 인수를 받는데, 첫 번째는 `값`, 두 번째도 *같은 값*인 `valueAgain`을 받고 있습니다. 세 번째는 목표하는 객체(셋)이고요. 동일한 값이 인수에 두 번 등장하고 있습니다.
+
+이렇게 구현된 이유는 `맵`과의 호환성 때문입니다. `맵`의 `forEach`에 쓰인 콜백이 세 개의 인수를 받을 때를 위해서죠. 이상해 보이겠지만 이렇게 구현해 놓았기 때문에 `맵`을 `셋`으로 혹은 `셋`을 `맵`으로 교체하기가 쉽습니다.
+
+`셋`에도 `맵`과 마찬가지로 반복 작업을 위한 메서드가 있습니다.
+
+- `set.keys()` – 셋 내의 모든 값을 포함하는 이터러블 객체를 반환합니다.
+- `set.values()` – `set.keys`와 동일한 작업을 합니다. `맵`과의 호환성을 위해 만들어진 메서드입니다.
+- `set.entries()` – 셋 내의 각 값을 이용해 만든 `[value, value]` 배열을 포함하는 이터러블 객체를 반환합니다. `맵`과의 호환성을 위해 만들어졌습니다.
+
+## 요약
+
+`맵`은 키가 있는 값이 저장된 컬렉션입니다.
+
+주요 메서드와 프로퍼티:
+
+- `new Map([iterable])` – 맵을 만듭니다. `[key,value]`쌍이 있는 `iterable`(예: 배열)을 선택적으로 넘길 수 있는데, 이때 넘긴 이터러블 객체는 맵 초기화에 사용됩니다.
+- `map.set(key, value)` – 키를 이용해 값을 저장합니다.
+- `map.get(key)` – 키에 해당하는 값을 반환합니다. `key`가 존재하지 않으면 `undefined`를 반환합니다.
+- `map.has(key)` – 키가 있으면 `true`, 없으면 `false`를 반환합니다.
+- `map.delete(key)` – 키에 해당하는 값을 삭제합니다.
+- `map.clear()` – 맵 안의 모든 요소를 제거합니다.
+- `map.size` – 요소의 개수를 반환합니다.
+
+일반적인 `객체`와의 차이점:
+
+- 키의 타입에 제약이 없습니다. 객체도 키가 될 수 있습니다.
+- `size` 프로퍼티 등의 유용한 메서드나 프로퍼티가 있습니다.
+
+`셋`은 중복이 없는 값을 저장할 때 쓰이는 컬렉션입니다.
+
+주요 메서드와 프로퍼티:
+
+- `new Set([iterable])` – 셋을 만듭니다. `iterable` 객체를 선택적으로 전달받을 수 있는데(대개 배열을 전달받음), 이터러블 객체 안의 요소는 셋을 초기화하는데 쓰입니다.
+- `set.add(value)` – 값을 추가하고 셋 자신을 반환합니다. 셋 내에 이미 `value`가 있는 경우 아무런 작업을 하지 않습니다.
+- `set.delete(value)` – 값을 제거합니다. 호출 시점에 셋 내에 값이 있어서 제거에 성공하면 `true`, 아니면 `false`를 반환합니다.
+- `set.has(value)` – 셋 내에 값이 존재하면 `true`, 아니면 `false`를 반환합니다.
+- `set.clear()` – 셋을 비웁니다.
+- `set.size` – 셋에 몇 개의 값이 있는지 세줍니다.
+
+`맵`과 `셋`에 반복 작업을 할 땐, 해당 컬렉션에 요소나 값을 추가한 순서대로 반복 작업이 수행됩니다. 따라서 이 두 컬렉션은 정렬이 되어있지 않다고 할 수 없습니다. 그렇지만 컬렉션 내 요소나 값을 재 정렬하거나 (배열에서 인덱스를 이용해 요소를 가져오는 것처럼) 숫자를 이용해 특정 요소나 값을 가지고 오는 것은 불가능합니다.
+
+## 5.8 위크맵과 위크셋
+
+`맵`과 `위크맵`의 첫 번째 차이는 `위크맵`의 키가 반드시 객체여야 한다는 점입니다. 원시값은 위크맵의 키가 될 수 없습니다.
+
+```jsx
+let weakMap = new WeakMap();
+
+let obj = {};
+
+weakMap.set(obj, "ok"); //정상적으로 동작합니다(객체 키).
+
+*// 문자열("test")은 키로 사용할 수 없습니다.
+weakMap.set("test", "Whoops"); // Error: Invalid value used as weak map key*
+```
+
+위크맵의 키로 사용된 객체를 참조하는 것이 아무것도 없다면 해당 객체는 메모리와 위크맵에서 자동으로 삭제됩니다.
+
+```jsx
+let john = { name: "John" };
+
+let weakMap = new WeakMap();
+weakMap.set(john, "...");
+
+john = null; // 참조를 덮어씀
+
+// john을 나타내는 객체는 이제 메모리에서 지워집니다!
+```
+
+`john`을 나타내는 객체는 오로지 `위크맵`의 키로만 사용되고 있으므로, 참조를 덮어쓰게 되면 이 객체는 위크맵과 메모리에서 자동으로 삭제됩니다.
+
+`맵`과 `위크맵`의 두 번째 차이는 `위크맵`은 반복 작업과 `keys()`, `values()`, `entries()` 메서드를 지원하지 않는다는 점입니다. 따라서 위크맵에선 키나 값 전체를 얻는 게 불가능합니다.
+
+`위크맵`이 지원하는 메서드는 단출합니다.
+
+- `weakMap.get(key)`
+- `weakMap.set(key, value)`
+- `weakMap.delete(key)`
+- `weakMap.has(key)`
+
+왜 이렇게 적은 메서드만 제공할까요? 원인은 가비지 컬렉션의 동작 방식 때문입니다. 위 예시의 `john`을 나타내는 객체처럼, 객체는 모든 참조를 잃게 되면 자동으로 가비지 컬렉션의 대상이 됩니다. 그런데 가비지 컬렉션의 *동작 시점*은 정확히 알 수 없습니다.
+
+가비지 컬렉션이 일어나는 시점은 자바스크립트 엔진이 결정합니다. 객체는 모든 참조를 잃었을 때, 그 즉시 메모리에서 삭제될 수도 있고, 다른 삭제 작업이 있을 때까지 대기하다가 함께 삭제될 수도 있습니다. 현재 `위크맵`에 요소가 몇 개 있는지 정확히 파악하는 것 자체가 불가능한 것이죠. 가비지 컬렉터가 한 번에 메모리를 청소할 수도 있고, 부분 부분 메모리를 청소할 수도 있으므로 위크맵의 요소(키/값) 전체를 대상으로 무언가를 하는 메서드는 동작 자체가 불가능합니다.
+
+그럼 위크맵을 어떤 경우에 사용할 수 있을까요?

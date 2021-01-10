@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<body>
+    <script>
+        "use strict";
+
+        // [1, -2, 15, 2, 0, 8].sort(function (a, b) {
+        //     document.writeln(a + " <> " + b);
+        //     return a - b;
+        // });
+
+        // let names = 'Bilbo, Gandalf, Nazgul';
+
+        // let arr = names.split(', ');
+
+        // for (let name of arr) {
+        //     alert(`${name}에게 보내는 메시지`); // Bilbo에게 보내는 메시지
+        // }
+
+        // let arr = [1, 2, 3, 4, 5];
+
+        // let result = arr.reduce((sum, current) => sum + current, 0);
+
+        // alert(result); // 15
+
+        let range = {
+            from : 1,
+            to : 5
+        };
+
+        range[Symbol.iterator] = function(){
+            return{
+                current = this.from,
+                last = this.to,
+
+                next(){
+                    if(this.current<=this.last){
+                        return{ done: false, value: this.current++ };
+                    }else{
+                        return{ done: true };
+                    }
+                }
+            };
+        };
+
+        for(let num of range){
+            alert(num);
+        }
+
+        let range = {
+            from: 1,
+            to: 5,
+
+            [Symbol.iterator](){
+                this.current = this.from;
+                return this;
+            },
+
+            next(){
+                if(this.current<=this.last){
+                    return{ done: false, value: this.current++ };
+                }else{
+                    return{ done: true };
+                }
+            }
+        }
+        
+        for(let num of range){
+            alert(num);
+        }
+    </script>
+</body>
+
+</html>
